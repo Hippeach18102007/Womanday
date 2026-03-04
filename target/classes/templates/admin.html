@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Quản Lý Lời Chúc 8/3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
+    <style>
+        :root { --rose:#c8425a; --gold:#c9a84c; --bg:#fdf6f0; --card:#ffffff; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:var(--bg); min-height:100vh; padding:2rem; }
+
+        .page-header { max-width:960px; margin:0 auto 2rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+        .page-title { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--rose); }
+        .page-subtitle { font-size:0.85rem; color:#999; }
+        .admin-container { max-width:960px; margin:0 auto; }
+
+        .section-card { background:var(--card); border-radius:16px; padding:1.8rem; margin-bottom:1.5rem; border:1px solid #f0e0e8; box-shadow:0 4px 20px rgba(200,66,90,0.06); }
+        .section-title { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--rose); margin-bottom:1.2rem; display:flex; align-items:center; justify-content:space-between; }
+        .section-title-left { display:flex; align-items:center; gap:0.5rem; }
+
+        /* Table */
+        .people-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+        .people-table th { background:#fff0f3; color:var(--rose); font-weight:600; padding:0.7rem 1rem; text-align:left; border-bottom:2px solid #f5dde4; }
+        .people-table td { padding:0.8rem 1rem; border-bottom:1px solid #fce8ec; vertical-align:middle; }
+        .people-table tr:last-child td { border-bottom:none; }
+        .people-table tr:hover td { background:#fffafa; }
+
+        .avatar-cell { display:flex; align-items:center; gap:0.8rem; }
+        .avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid #f5dde4; flex-shrink:0; }
+        .avatar-placeholder { width:44px; height:44px; border-radius:50%; background:#f9e8ed; border:2px dashed #e0a0b0; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+        .person-name-cell { font-weight:500; color:#333; }
+
+        .msg-preview { color:#888; font-size:0.82rem; max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .msg-empty { color:#ccc; font-style:italic; font-size:0.82rem; }
+
+        .action-btns { display:flex; gap:0.5rem; }
+        .btn-edit { background:#fff7e6!important; color:#d48806!important; border-color:#ffd591!important; border-radius:6px!important; font-size:0.8rem!important; }
+        .btn-delete { background:#fff1f0!important; color:#cf1322!important; border-color:#ffa39e!important; border-radius:6px!important; font-size:0.8rem!important; }
+        .btn-add { background:linear-gradient(135deg,var(--rose),#a03050)!important; color:white!important; border:none!important; border-radius:8px!important; }
+
+        .save-btn { background:var(--rose)!important; border-color:var(--rose)!important; color:white!important; border-radius:50px!important; }
+        .back-link { display:inline-flex; align-items:center; gap:0.4rem; color:var(--rose); text-decoration:none; font-size:0.9rem; padding:0.5rem 1rem; border-radius:50px; border:1px solid #f0c8d0; background:white; transition:all 0.2s; }
+        .back-link:hover { background:var(--rose); color:white; border-color:var(--rose); }
+
+        /* Dialog */
+        .dialog-photo-wrap { display:flex; flex-direction:column; align-items:center; gap:0.8rem; margin-bottom:1rem; }
+        .dialog-avatar { width:90px; height:90px; border-radius:50%; object-fit:cover; border:3px solid #f5dde4; }
+        .dialog-avatar-ph { width:90px; height:90px; border-radius:50%; background:#f9e8ed; border:2px dashed #e0a0b0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; }
+
+        .form-label { font-size:0.85rem; font-weight:500; color:#555; margin-bottom:0.4rem; }
+
+        @media(max-width:640px) { .people-table th:nth-child(3), .people-table td:nth-child(3) { display:none; } }
+
+        .playlist-row { display:grid; grid-template-columns:1fr auto auto; gap:.8rem; align-items:center; padding:.7rem 0; border-bottom:1px solid #fce8ec; }
+        .playlist-row:last-child { border-bottom:none; }
+        .song-title { font-size:.9rem; font-weight:500; color:#333; }
+        .song-url { font-size:.75rem; color:#aaa; margin-top:.15rem; }
+        .song-order { display:flex; gap:.3rem; }
+        .btn-order { background:white!important; border:1px solid #f0c8d0!important; color:var(--rose)!important; border-radius:6px!important; padding:.2rem .5rem!important; font-size:.8rem!important; min-width:28px!important; }
+        .btn-del-song { background:#fff1f0!important; color:#cf1322!important; border-color:#ffa39e!important; border-radius:6px!important; font-size:.8rem!important; }
+        .mode-btn { border-radius:50px!important; font-size:.82rem!important; }
+        .mode-btn.active { background:var(--rose)!important; color:white!important; border-color:var(--rose)!important; }
+    </style>
+</head>
+<body>
+
+<div id="admin-app">
+    <div class="page-header">
+        <div>
+            <div class="page-title">⚙ Quản Lý 8/3</div>
+            <div class="page-subtitle">Cài đặt lời chúc & ảnh cho từng người</div>
+        </div>
+        <a href="/" class="back-link">← Về trang chủ</a>
+    </div>
+
+    <div class="admin-container">
+
+        <!-- ===== SECTION 1: Người Đặc Biệt ===== -->
+        <div class="section-card">
+            <div class="section-title">
+                <span class="section-title-left">🌹 Người Đặc Biệt (có ảnh riêng)</span>
+                <el-button class="btn-add" size="small" @click="openAddDialog">
+                    + Thêm người
+                </el-button>
+            </div>
+
+            <table class="people-table">
+                <thead>
+                    <tr>
+                        <th style="width:260px">Tên</th>
+                        <th style="width:280px">Lời chúc</th>
+                        <th>Ảnh</th>
+                        <th style="width:130px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="person in specialPeople" :key="person.name">
+                        <td>
+                            <div class="avatar-cell">
+                                <img v-if="person.previewUrl" :src="person.previewUrl" class="avatar" @error="e=>e.target.style.display='none'" />
+                                <div v-else class="avatar-placeholder">👩</div>
+                                <span class="person-name-cell">{{ person.name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div v-if="person.message" class="msg-preview" :title="person.message">{{ person.message }}</div>
+                            <div v-else class="msg-empty">Chưa có lời chúc riêng</div>
+                        </td>
+                        <td>
+                            <el-tag v-if="person.previewUrl" type="success" size="small">✓ Có ảnh</el-tag>
+                            <el-tag v-else type="info" size="small">Chưa có</el-tag>
+                        </td>
+                        <td>
+                            <div class="action-btns">
+                                <el-button class="btn-edit" size="small" @click="openEditDialog(person)">✏ Sửa</el-button>
+                                <el-button class="btn-delete" size="small" @click="confirmDelete(person)">🗑 Xóa</el-button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="specialPeople.length === 0">
+                        <td colspan="4" style="text-align:center;color:#ccc;padding:2rem;font-style:italic">Chưa có ai trong danh sách đặc biệt</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ===== SECTION 2: Lời chúc chung ===== -->
+        <div class="section-card">
+            <div class="section-title"><span class="section-title-left">💌 Lời Chúc Chung</span></div>
+            <p style="font-size:0.85rem;color:#999;margin-bottom:1rem">
+                Những người không có trong danh sách đặc biệt sẽ nhận lời chúc này.
+            </p>
+            <el-input v-model="generalMessage" type="textarea" :rows="4" placeholder="Nhập lời chúc chung..." />
+            <el-button class="save-btn" size="small" style="margin-top:0.6rem" :loading="savingGeneral" @click="saveGeneralMessage">
+                💾 Lưu lời chúc chung
+            </el-button>
+
+            <el-divider><span style="font-size:0.8rem;color:#ccc">Lời chúc riêng cho tên cụ thể (không có ảnh)</span></el-divider>
+            <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:0.8rem;align-items:flex-start;margin-bottom:0.8rem">
+                <el-input v-model="newPersonName" placeholder="Tên người..." />
+                <el-input v-model="newPersonMsg" type="textarea" :rows="2" placeholder="Lời chúc riêng..." />
+                <el-button class="save-btn" @click="addCustomMsg">+ Thêm</el-button>
+            </div>
+            <div v-if="customList.length > 0">
+                <el-tag v-for="item in customList" :key="item.name" closable @close="removeCustomMsg(item.name)" style="margin:0.3rem" type="warning">
+                    {{ item.name }}: {{ item.msg.slice(0,30) }}...
+                </el-tag>
+            </div>
+        </div>
+
+        <!-- ===== SECTION 3: Playlist Nhạc ===== -->
+        <div class="section-card">
+            <div class="section-title">
+                <span class="section-title-left">🎵 Playlist Nhạc</span>
+                <div style="display:flex;gap:.5rem;align-items:center">
+                    <span style="font-size:.78rem;color:#aaa">Chế độ:</span>
+                    <el-button class="mode-btn" :class="{active: playMode==='loop'}" size="small" @click="setPlayMode('loop')">🔁 Lặp lại</el-button>
+                    <el-button class="mode-btn" :class="{active: playMode==='next'}" size="small" @click="setPlayMode('next')">⏭ Bài tiếp</el-button>
+                    <el-button class="mode-btn" :class="{active: playMode==='shuffle'}" size="small" @click="setPlayMode('shuffle')">🔀 Ngẫu nhiên</el-button>
+                </div>
+            </div>
+
+            <p style="font-size:.82rem;color:#aaa;margin-bottom:1rem">Thêm link YouTube — khi hết bài sẽ tự động chuyển theo chế độ đã chọn.</p>
+
+            <!-- Thêm bài mới -->
+            <div style="margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px dashed #f5dde4">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.6rem">
+                    <div>
+                        <div style="font-size:.78rem;color:#888;margin-bottom:.3rem">🎵 Tên bài hát</div>
+                        <el-input v-model="newSong.title" placeholder="VD: Hương Mùa Hè..." size="small" />
+                    </div>
+                    <div>
+                        <div style="font-size:.78rem;color:#888;margin-bottom:.3rem">🔗 Link YouTube</div>
+                        <el-input v-model="newSong.url" placeholder="https://youtube.com/watch?v=..." size="small" />
+                    </div>
+                </div>
+                <el-button class="save-btn" size="small" @click="addSong" style="width:100%">+ Thêm vào playlist</el-button>
+            </div>
+
+            <!-- Danh sách -->
+            <div v-if="playlist.length === 0" style="text-align:center;color:#ccc;padding:1.5rem;font-style:italic">
+                Chưa có bài nào — thêm link YouTube phía trên
+            </div>
+            <div v-for="(song, idx) in playlist" :key="song.id" class="playlist-row">
+                <div>
+                    <div class="song-title">{{ idx+1 }}. {{ song.title }}</div>
+                    <div class="song-url">{{ song.url }}</div>
+                </div>
+                <div class="song-order">
+                    <el-button class="btn-order" size="small" :disabled="idx===0" @click="moveSong(idx,-1)">↑</el-button>
+                    <el-button class="btn-order" size="small" :disabled="idx===playlist.length-1" @click="moveSong(idx,1)">↓</el-button>
+                </div>
+                <el-button class="btn-del-song" size="small" @click="removeSong(idx)">🗑</el-button>
+            </div>
+
+            <div style="margin-top:1rem;text-align:right" v-if="playlist.length>0">
+                <el-button class="save-btn" :loading="savingPlaylist" @click="savePlaylist">💾 Lưu playlist</el-button>
+            </div>
+        </div>
+
+        <!-- ===== Preview ===== -->
+        <div class="section-card">
+            <div class="section-title"><span class="section-title-left">👀 Xem trước</span></div>
+            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;align-items:flex-end">
+                <el-input v-model="previewName" placeholder="Nhập tên để xem trước..." style="width:280px" />
+                <el-button class="save-btn" @click="previewGreeting">🔍 Xem thử</el-button>
+            </div>
+            <div v-if="previewResult" style="margin-top:1rem;background:#fff8f9;border:1px solid #f5dde4;border-radius:10px;padding:1rem">
+                <div style="font-weight:600;color:var(--rose);margin-bottom:0.5rem">{{ previewResult.name }}</div>
+                <div style="font-size:0.9rem;color:#555;margin-bottom:0.5rem">{{ previewResult.message }}</div>
+                <el-tag :type="previewResult.hasPhoto ? 'success' : 'info'" size="small">
+                    {{ previewResult.hasPhoto ? '✓ Có ảnh' : '◌ Không có ảnh' }}
+                </el-tag>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== DIALOG THÊM / SỬA ===== -->
+    <el-dialog v-model="dialogVisible" :title="isEditing ? '✏ Sửa người đặc biệt' : '+ Thêm người đặc biệt'" width="520px" border-radius="16px">
+        <div class="dialog-photo-wrap">
+            <img v-if="form.previewUrl" :src="form.previewUrl" class="dialog-avatar" @error="e=>e.target.style.display='none'" />
+            <div v-else class="dialog-avatar-ph">👩</div>
+            <el-upload :show-file-list="false" accept="image/*" :before-upload="handleDialogPhoto">
+                <el-button size="small" plain style="border-radius:50px">📷 {{ form.previewUrl ? 'Đổi ảnh' : 'Chọn ảnh' }}</el-button>
+            </el-upload>
+        </div>
+
+        <div style="margin-bottom:1rem">
+            <div class="form-label">Họ và tên *</div>
+            <el-input v-model="form.name" placeholder="Nguyễn Thị ..." :disabled="isEditing" />
+            <div v-if="isEditing" style="font-size:0.75rem;color:#aaa;margin-top:0.3rem">Không thể đổi tên, hãy xóa và thêm lại</div>
+        </div>
+
+        <div style="margin-bottom:1rem">
+            <div class="form-label">Lời chúc riêng</div>
+            <el-input v-model="form.message" type="textarea" :rows="4" placeholder="Nhập lời chúc dành riêng..." />
+        </div>
+
+        <template #footer>
+            <el-button @click="dialogVisible=false" style="border-radius:50px">Hủy</el-button>
+            <el-button class="save-btn" :loading="form.saving" @click="submitDialog">
+                {{ isEditing ? '💾 Cập nhật' : '➕ Thêm mới' }}
+            </el-button>
+        </template>
+    </el-dialog>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/element-plus/dist/index.full.min.js"></script>
+
+<script>
+const { createApp, ref, reactive } = Vue;
+createApp({
+    data() {
+        return {
+            specialPeople: [],
+            generalMessage: 'Chúc mừng ngày Quốc tế Phụ nữ 8/3! Kính chúc bạn luôn vui vẻ, hạnh phúc và tràn đầy sức khỏe. Chúc bạn luôn xinh đẹp, tỏa sáng trong mọi hoàn cảnh! 🌺🌸',
+            savingGeneral: false,
+            newPersonName: '',
+            newPersonMsg: '',
+            customList: [],
+            previewName: '',
+            previewResult: null,
+            // Dialog
+            dialogVisible: false,
+            // Playlist
+            playlist: [],
+            playMode: 'next',
+            newSong: { title:'', url:'' },
+            savingPlaylist: false,
+            isEditing: false,
+            form: { name:'', message:'', previewUrl:null, pendingFile:null, saving:false },
+        };
+    },
+    async mounted() {
+        await this.loadData();
+    },
+    methods: {
+        async loadData() {
+            try {
+                const res = await fetch('/api/admin/special-recipients');
+                const data = await res.json();
+                if (data.success) {
+                    const configs = data.savedConfigs || {};
+                    // Build specialPeople từ danh sách trả về
+                    const names = data.specialRecipientsList || [];
+                    this.specialPeople = names.map(name => {
+                        const cfg = configs[name] || {};
+                        return { name, message: cfg.message||'', previewUrl: cfg.photoPath||null };
+                    });
+                    if (data.generalMessage) this.generalMessage = data.generalMessage;
+                // Load playlist
+                try {
+                    const pr = await fetch('/api/admin/playlist');
+                    const pd = await pr.json();
+                    if (pd.success) {
+                        this.playlist = pd.playlist || [];
+                        this.playMode = pd.playMode || 'next';
+                    }
+                } catch(e) { console.error('playlist load error', e); }
+                    const msgs = data.customMessages || {};
+                    const skip = [...names, '__general__'];
+                    this.customList = Object.entries(msgs)
+                        .filter(([n]) => !skip.includes(n))
+                        .map(([name, msg]) => ({ name, msg }));
+                }
+            } catch(e) { console.error(e); }
+        },
+
+        // ===== DIALOG =====
+        openAddDialog() {
+            this.isEditing = false;
+            this.form = { name:'', message:'', previewUrl:null, pendingFile:null, saving:false };
+            this.dialogVisible = true;
+        },
+        openEditDialog(person) {
+            this.isEditing = true;
+            this.form = { name: person.name, message: person.message, previewUrl: person.previewUrl, pendingFile:null, saving:false };
+            this.dialogVisible = true;
+        },
+        handleDialogPhoto(file) {
+            const reader = new FileReader();
+            reader.onload = e => { this.form.previewUrl = e.target.result; };
+            reader.readAsDataURL(file);
+            this.form.pendingFile = file;
+            return false;
+        },
+        async submitDialog() {
+            if (!this.form.name.trim()) {
+                ElementPlus.ElMessage.warning('Vui lòng nhập tên!');
+                return;
+            }
+            this.form.saving = true;
+            try {
+                // Upload ảnh nếu có file mới
+                if (this.form.pendingFile) {
+                    // Thêm người vào special list trước (nếu thêm mới)
+                    if (!this.isEditing) {
+                        await fetch('/api/admin/special-add', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: this.form.name.trim() })
+                        });
+                    }
+                    const fd = new FormData();
+                    fd.append('name', this.form.name.trim());
+                    fd.append('file', this.form.pendingFile);
+                    await fetch('/api/admin/photo', { method:'POST', body:fd });
+                } else if (!this.isEditing) {
+                    await fetch('/api/admin/special-add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: this.form.name.trim() })
+                    });
+                }
+                // Lưu lời chúc
+                if (this.form.message.trim()) {
+                    await fetch('/api/admin/message', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({ name: this.form.name.trim(), message: this.form.message })
+                    });
+                }
+                ElementPlus.ElMessage.success(this.isEditing ? 'Cập nhật thành công!' : 'Thêm người thành công!');
+                this.dialogVisible = false;
+                await this.loadData();
+            } catch(e) {
+                ElementPlus.ElMessage.error('Có lỗi xảy ra');
+            } finally {
+                this.form.saving = false;
+            }
+        },
+
+        // ===== XÓA =====
+        confirmDelete(person) {
+            ElementPlus.ElMessageBox.confirm(
+                `Bạn có chắc muốn xóa <b>${person.name}</b> khỏi danh sách đặc biệt không?`,
+                'Xác nhận xóa',
+                { confirmButtonText: 'Xóa', cancelButtonText: 'Hủy', type: 'warning', dangerouslyUseHTMLString: true }
+            ).then(async () => {
+                await fetch('/api/admin/special-remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: person.name })
+                });
+                ElementPlus.ElMessage.success('Đã xóa ' + person.name);
+                await this.loadData();
+            }).catch(() => {});
+        },
+
+        // ===== LỜI CHÚC CHUNG =====
+        async saveGeneralMessage() {
+            this.savingGeneral = true;
+            try {
+                await fetch('/api/admin/message', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ name:'__general__', message: this.generalMessage })
+                });
+                ElementPlus.ElMessage.success('Đã lưu lời chúc chung!');
+            } finally { this.savingGeneral = false; }
+        },
+        async addCustomMsg() {
+            if (!this.newPersonName.trim() || !this.newPersonMsg.trim()) {
+                ElementPlus.ElMessage.warning('Vui lòng điền đủ tên và lời chúc');
+                return;
+            }
+            const res = await fetch('/api/admin/message', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ name: this.newPersonName, message: this.newPersonMsg })
+            });
+            const data = await res.json();
+            if (data.success) {
+                this.customList.push({ name: this.newPersonName, msg: this.newPersonMsg });
+                this.newPersonName = ''; this.newPersonMsg = '';
+                ElementPlus.ElMessage.success('Đã thêm!');
+            }
+        },
+        // ===== PLAYLIST =====
+        addSong() {
+            if (!this.newSong.title.trim() || !this.newSong.url.trim()) {
+                ElementPlus.ElMessage.warning('Vui lòng nhập tên bài và link YouTube');
+                return;
+            }
+            if (!this.newSong.url.includes('youtube') && !this.newSong.url.includes('youtu.be')) {
+                ElementPlus.ElMessage.warning('Chỉ hỗ trợ link YouTube!');
+                return;
+            }
+            this.playlist.push({ id: Date.now(), title: this.newSong.title.trim(), url: this.newSong.url.trim() });
+            this.newSong = { title:'', url:'' };
+        },
+        removeSong(idx) {
+            this.playlist.splice(idx, 1);
+        },
+        moveSong(idx, dir) {
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= this.playlist.length) return;
+            const tmp = this.playlist[idx];
+            this.playlist[idx] = this.playlist[newIdx];
+            this.playlist[newIdx] = tmp;
+        },
+        setPlayMode(mode) {
+            this.playMode = mode;
+        },
+        async savePlaylist() {
+            this.savingPlaylist = true;
+            try {
+                const res = await fetch('/api/admin/playlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playlist: this.playlist, playMode: this.playMode })
+                });
+                const data = await res.json();
+                if (data.success) ElementPlus.ElMessage.success('Đã lưu playlist!');
+                else ElementPlus.ElMessage.error('Lưu thất bại');
+            } catch(e) { ElementPlus.ElMessage.error('Lỗi kết nối'); }
+            finally { this.savingPlaylist = false; }
+        },
+        removeCustomMsg(name) {
+            this.customList = this.customList.filter(i => i.name !== name);
+        },
+        async previewGreeting() {
+            if (!this.previewName.trim()) { ElementPlus.ElMessage.warning('Nhập tên để xem trước'); return; }
+            const res = await fetch(`/api/greeting?name=${encodeURIComponent(this.previewName.trim())}`);
+            const data = await res.json();
+            if (data.success) this.previewResult = data;
+        }
+    }
+}).use(ElementPlus).mount('#admin-app');
+</script>
+</body>
+</html>

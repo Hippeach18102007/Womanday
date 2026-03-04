@@ -1,0 +1,8 @@
+com\womenday\app\service\GreetingConfigRepository.class
+com\womenday\app\controller\FeedbackController.class
+com\womenday\app\controller\GreetingController.class
+com\womenday\app\model\GreetingConfig.class
+com\womenday\app\WomenDayApplication.class
+com\womenday\app\model\Greeting.class
+com\womenday\app\controller\PlaylistController.class
+com\womenday\app\service\GreetingService.class

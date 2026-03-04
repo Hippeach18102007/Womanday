@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chúc Mừng 8/3 💐</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Be+Vietnam+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --rose:#c8425a; --rose-light:#e8667a; --rose-pale:#fce8ec;
+            --gold:#c9a84c; --gold-light:#f0d080; --cream:#fdf6f0;
+            --deep:#1a0a10; --text:#3d1a24;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Be Vietnam Pro',sans-serif; background:var(--cream); min-height:100vh; overflow-x:hidden; }
+
+        /* Petals */
+        .petals-bg { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+        .petal { position:absolute; opacity:0; animation:fall linear infinite; border-radius:50% 0 50% 0; }
+        @keyframes fall { 0%{transform:translateY(-20px) rotate(0deg);opacity:.8} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
+        /* Pages */
+        #page-input, #page-greeting { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; }
+        #page-greeting { display:none; }
+
+        /* Input card */
+        .input-card { background:white; border:1px solid #f0d0d8; border-radius:24px; padding:3.5rem 3rem; max-width:480px; width:100%; box-shadow:0 20px 80px rgba(200,66,90,.12); text-align:center; position:relative; overflow:hidden; }
+        .input-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--rose),var(--gold),var(--rose)); }
+        .date-badge { display:inline-block; font-family:'Playfair Display',serif; font-size:.85rem; letter-spacing:.3em; color:var(--gold); text-transform:uppercase; margin-bottom:1.2rem; }
+        .input-title { font-family:'Playfair Display',serif; font-size:2.4rem; color:var(--rose); line-height:1.2; margin-bottom:.5rem; }
+        .input-subtitle { font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:#a06080; margin-bottom:2.2rem; font-style:italic; }
+        .flower-divider { font-size:1.6rem; margin-bottom:2rem; letter-spacing:.5rem; }
+        .input-field-wrap { margin-bottom:1.2rem; }
+        .custom-input .el-input__wrapper { border-radius:50px!important; padding:0 1.2rem!important; height:48px!important; box-shadow:0 0 0 1px #f0c0cc inset!important; font-size:1rem; }
+        .custom-input .el-input__wrapper:hover, .custom-input .el-input__wrapper.is-focus { box-shadow:0 0 0 2px var(--rose) inset!important; }
+        .btn-greet { width:100%; height:48px; border-radius:50px!important; background:linear-gradient(135deg,var(--rose),#a03050)!important; border:none!important; font-size:1rem; font-weight:500; color:white!important; transition:all .3s!important; box-shadow:0 4px 20px rgba(200,66,90,.35)!important; }
+        .btn-greet:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(200,66,90,.5)!important; }
+        .hint-text { margin-top:1.2rem; font-size:.8rem; color:#c0909a; }
+        .deco-rose { font-size:4rem; line-height:1; margin-bottom:1rem; animation:float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+        /* Greeting wrap */
+        .greeting-wrap { max-width:680px; width:100%; }
+        .greeting-card { background:white; border-radius:24px; overflow:hidden; box-shadow:0 24px 100px rgba(200,66,90,.14); border:1px solid #f5dde4; }
+        .greeting-header { background:linear-gradient(135deg,#b83050 0%,#c8425a 40%,#d4607a 70%,var(--gold) 100%); padding:2.5rem 2rem 2rem; text-align:center; position:relative; }
+        .greeting-tag { display:inline-block; background:rgba(255,255,255,.2); color:rgba(255,255,255,.95); font-size:.75rem; letter-spacing:.3em; text-transform:uppercase; padding:.3rem 1rem; border-radius:50px; border:1px solid rgba(255,255,255,.3); margin-bottom:1rem; }
+        .greeting-name { font-family:'Playfair Display',serif; font-size:2rem; color:white; font-weight:700; text-shadow:0 2px 8px rgba(0,0,0,.2); margin-bottom:.3rem; }
+        .greeting-name-italic { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1rem; color:rgba(255,255,255,.85); }
+
+        /* Music player */
+        .music-section { padding:1.2rem 2rem 0; }
+        .music-player { background:linear-gradient(135deg,#fff0f4,#fff8e8); border:1px solid #f5dde4; border-radius:16px; padding:1rem 1.2rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+        .music-icon { font-size:1.6rem; flex-shrink:0; animation:pulse-music 2s ease-in-out infinite; }
+        @keyframes pulse-music { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+        .music-info { flex:1; min-width:120px; }
+        .music-title { font-size:.82rem; font-weight:600; color:var(--rose); margin-bottom:.2rem; }
+        .music-sub { font-size:.75rem; color:#aaa; }
+        .music-controls { display:flex; align-items:center; gap:.5rem; }
+        .btn-music { background:var(--rose)!important; color:white!important; border:none!important; border-radius:50%!important; width:36px!important; height:36px!important; padding:0!important; font-size:.9rem!important; display:flex; align-items:center; justify-content:center; }
+        .btn-music-sm { background:white!important; color:var(--rose)!important; border:1px solid #f5dde4!important; border-radius:50px!important; font-size:.75rem!important; padding:.3rem .8rem!important; }
+        .volume-wrap { display:flex; align-items:center; gap:.4rem; font-size:.75rem; color:#aaa; }
+        .yt-hidden { position:absolute; top:-9999px; left:-9999px; opacity:0; pointer-events:none; }
+
+        /* Photo */
+        .photo-section { padding:2rem 2rem 0; text-align:center; }
+        .photo-frame { display:inline-block; position:relative; margin-bottom:.5rem; }
+        .photo-frame img { width:160px; height:160px; border-radius:50%; object-fit:cover; border:4px solid white; box-shadow:0 8px 30px rgba(200,66,90,.25); }
+        .photo-badge { position:absolute; bottom:4px; right:4px; width:36px; height:36px; background:var(--rose); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; border:2px solid white; }
+
+        /* Message */
+        .message-section { padding:2rem 2.5rem 1.5rem; }
+        .message-label { font-family:'Playfair Display',serif; font-size:.8rem; letter-spacing:.2em; color:var(--gold); text-transform:uppercase; margin-bottom:.8rem; display:flex; align-items:center; gap:.5rem; }
+        .message-label::before,.message-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,#f0c8d0); }
+        .message-label::after { background:linear-gradient(90deg,#f0c8d0,transparent); }
+        .message-text { font-family:'Cormorant Garamond',serif; font-size:1.25rem; line-height:1.9; color:var(--text); text-align:center; }
+
+        /* Social + contact */
+        .social-section { padding:1.5rem 2rem; background:#fffafa; border-top:1px dashed #f5dde4; text-align:center; }
+        .social-label { font-size:.78rem; color:#bbb; letter-spacing:.15em; text-transform:uppercase; margin-bottom:.9rem; }
+        .social-links { display:flex; justify-content:center; gap:.7rem; flex-wrap:wrap; }
+        .social-link { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem 1.1rem; border-radius:50px; font-size:.82rem; font-weight:600; color:white; text-decoration:none; transition:all .2s; box-shadow:0 2px 10px rgba(0,0,0,.12); }
+        .social-link:hover { transform:translateY(-2px); box-shadow:0 5px 18px rgba(0,0,0,.18); }
+        .social-fb { background:#1877F2; }
+        .social-ig { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); }
+        .social-gmail { background:#EA4335; }
+
+        /* Star rating */
+        .rating-section { padding:1.5rem 2rem; border-top:1px dashed #f5dde4; }
+        .rating-title { font-family:'Playfair Display',serif; font-size:.85rem; color:var(--rose); text-align:center; margin-bottom:1rem; letter-spacing:.05em; }
+        .stars-row { display:flex; justify-content:center; gap:.4rem; margin-bottom:.8rem; }
+        .star-btn { font-size:1.8rem; cursor:pointer; color:#ddd; transition:all .15s; background:none; border:none; line-height:1; }
+        .star-btn.active, .star-btn:hover { color:#f5c518; transform:scale(1.2); }
+        .star-labels { display:flex; justify-content:center; gap:.3rem; font-size:.72rem; color:#ccc; margin-bottom:.6rem; }
+        .star-label { width:32px; text-align:center; }
+
+        /* Wish section */
+        .wish-section { padding:0 2rem 1.5rem; }
+        .wish-title { font-family:'Playfair Display',serif; font-size:.85rem; color:var(--rose); text-align:center; margin-bottom:.8rem; }
+        .wish-hint { font-size:.78rem; color:#bbb; text-align:center; margin-bottom:.8rem; }
+
+        /* Footer buttons */
+        .greeting-footer { padding:1.2rem 2rem 1.8rem; text-align:center; border-top:1px dashed #f0d0d8; display:flex; gap:.8rem; flex-wrap:wrap; justify-content:center; }
+        .btn-back { border-radius:50px!important; color:var(--rose)!important; border-color:var(--rose)!important; }
+        .btn-share { border-radius:50px!important; background:linear-gradient(135deg,var(--rose),#a03050)!important; border:none!important; color:white!important; }
+        .btn-send { border-radius:50px!important; background:linear-gradient(135deg,#43a047,#1b5e20)!important; border:none!important; color:white!important; }
+
+        /* Confetti */
+        .confetti-item { position:fixed; top:-10px; pointer-events:none; z-index:9999; animation:confetti-fall 3s ease-in forwards; }
+        @keyframes confetti-fall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+        .slide-up-enter { animation:slideUp .6s cubic-bezier(.34,1.56,.64,1) forwards; }
+        @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .admin-link { position:fixed; bottom:1.5rem; right:1.5rem; background:white; border:1px solid #eee; border-radius:50px; padding:.5rem 1rem; font-size:.75rem; color:#aaa; text-decoration:none; box-shadow:0 2px 12px rgba(0,0,0,.08); transition:all .2s; }
+        .admin-link:hover { color:var(--rose); border-color:var(--rose); }
+
+        @media(max-width:600px) { .input-card,.message-section{padding:2rem 1.5rem} .greeting-name{font-size:1.6rem} .message-text{font-size:1.1rem} .music-player{gap:.6rem} }
+    </style>
+</head>
+<body>
+
+<div class="petals-bg" id="petals"></div>
+
+<!-- PAGE 1: INPUT -->
+<div id="page-input">
+    <div class="input-card slide-up-enter">
+        <div class="deco-rose">🌹</div>
+        <div class="date-badge">✦ Quốc Tế Phụ Nữ ✦</div>
+        <h1 class="input-title">Chúc Mừng<br>8 tháng 3</h1>
+        <p class="input-subtitle">Gửi lời yêu thương đến những người phụ nữ đặc biệt</p>
+        <div class="flower-divider">🌸 🌺 🌸</div>
+        <div id="input-app">
+            <div class="input-field-wrap">
+                <el-input v-model="name" placeholder="Nhập tên người bạn muốn chúc mừng..." class="custom-input" size="large" @keyup.enter="sendGreeting" clearable />
+            </div>
+            <el-button class="btn-greet" :loading="loading" @click="sendGreeting" size="large">
+                <span v-if="!loading">💌 &nbsp; Gửi lời chúc</span>
+                <span v-else>Đang chuẩn bị...</span>
+            </el-button>
+            <p class="hint-text">🌷 Nhập tên và nhấn nút để nhận lời chúc riêng</p>
+        </div>
+    </div>
+</div>
+
+<!-- PAGE 2: GREETING -->
+<div id="page-greeting">
+    <div class="greeting-wrap" id="greeting-app">
+        <div class="greeting-card slide-up-enter">
+
+            <!-- Header -->
+            <div class="greeting-header">
+                <div class="greeting-tag">✦ Chúc Mừng 8/3 ✦</div>
+                <div class="greeting-name">{{ greetingData.name }}</div>
+                <div class="greeting-name-italic">Người phụ nữ tuyệt vời</div>
+            </div>
+
+            <!-- 🎵 Music Player -->
+            <div class="music-section">
+                <div class="music-player">
+                    <div class="music-icon">🎵</div>
+                    <div class="music-info">
+                        <div class="music-title">{{ currentSong.title || 'Nhạc 8/3' }}</div>
+                        <div class="music-sub">{{ isPlaying ? '▶ Đang phát...' : '⏸ Đã dừng' }}</div>
+                    </div>
+                    <div class="music-controls">
+                        <el-button class="btn-music" @click="togglePlay" :title="isPlaying ? 'Dừng' : 'Phát'">
+                            <i :class="isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+                        </el-button>
+                        <el-button class="btn-music-sm" @click="showYtInput=!showYtInput">
+                            <i class="fa-brands fa-youtube" style="color:#ff0000"></i> Đổi nhạc
+                        </el-button>
+                    </div>
+                </div>
+                <!-- YouTube input -->
+                <div v-if="showYtInput" style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap">
+                    <el-input v-model="ytUrl" placeholder="Dán link YouTube vào đây..." size="small" style="flex:1;min-width:200px" clearable />
+                    <el-button size="small" @click="loadYoutube" style="border-radius:50px;background:var(--rose);color:white;border:none">▶ Tải nhạc</el-button>
+                </div>
+            </div>
+
+            <!-- YouTube Player (ẩn, dùng IFrame API) -->
+            <div id="yt-player" class="yt-hidden"></div>
+
+            <!-- Photo -->
+            <div class="photo-section" v-if="greetingData.hasPhoto && greetingData.photoPath">
+                <div class="photo-frame">
+                    <img :src="greetingData.photoPath" :alt="greetingData.name" @error="e=>e.target.style.display='none'" />
+                    <div class="photo-badge">🌹</div>
+                </div>
+            </div>
+
+            <!-- Message -->
+            <div class="message-section">
+                <div class="message-label">Lời Chúc</div>
+                <p class="message-text">{{ greetingData.message }}</p>
+            </div>
+
+            <!-- ⭐ Rating -->
+            <div class="rating-section">
+                <div class="rating-title">✨ Bạn cảm thấy thế nào về lời chúc này?</div>
+                <div class="stars-row">
+                    <button v-for="i in 5" :key="i" class="star-btn" :class="{active: i <= (hoverStar||selectedStar)}"
+                        @mouseenter="hoverStar=i" @mouseleave="hoverStar=0" @click="selectStar(i)">★</button>
+                </div>
+                <div class="star-labels">
+                    <span class="star-label">😢</span>
+                    <span class="star-label">😕</span>
+                    <span class="star-label">😊</span>
+                    <span class="star-label">😍</span>
+                    <span class="star-label">🥰</span>
+                </div>
+                <div v-if="selectedStar > 0" style="text-align:center;font-size:.82rem;color:#c8425a;margin-top:.3rem">
+                    Bạn chọn {{ selectedStar }}/5 sao {{ ['','😢','😕','😊','😍','🥰'][selectedStar] }}
+                </div>
+            </div>
+
+            <!-- 💌 Điều ước -->
+            <div class="wish-section">
+                <div class="message-label">Điều Ước</div>
+                <div class="wish-hint">Hãy viết một điều ước — tôi sẽ cố gắng thực hiện cho bạn 🌟</div>
+                <el-input v-model="wishText" type="textarea" :rows="3"
+                    placeholder="Ví dụ: Mình ước được đi cà phê cùng nhau một buổi chiều 🌸..."
+                    style="font-size:.9rem;margin-bottom:.8rem" />
+            </div>
+
+            <!-- 📱 Social Links (của Đào Đức) -->
+            <div class="social-section">
+                <div class="social-label">Kết nối với tôi</div>
+                <div class="social-links">
+                    <a href="https://facebook.com/nopro.peach" target="_blank" class="social-link social-fb">
+                        <i class="fa-brands fa-facebook"></i> Facebook
+                    </a>
+                    <a href="https://instagram.com/daoduc8059" target="_blank" class="social-link social-ig">
+                        <i class="fa-brands fa-instagram"></i> Instagram
+                    </a>
+                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=daod1068@gmail.com" target="_blank" class="social-link social-gmail">
+                        <i class="fa-solid fa-envelope"></i> Gmail
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer buttons -->
+            <div class="greeting-footer">
+                <el-button class="btn-back" @click="goBack" plain>← Quay lại</el-button>
+                <el-button class="btn-share" @click="celebrate">🎊 Thêm lời chúc</el-button>
+                <el-button class="btn-send" :loading="sending" @click="submitFeedback">
+                    💌 Gửi điều ước & đánh giá
+                </el-button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<a href="/admin" class="admin-link">⚙ Admin</a>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/element-plus/dist/index.full.min.js"></script>
+
+<script>
+// Petals
+const petalContainer = document.getElementById('petals');
+for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (4 + Math.random() * 6) + 's';
+    p.style.animationDelay = (Math.random() * 8) + 's';
+    p.style.width = (8 + Math.random() * 10) + 'px';
+    p.style.height = (10 + Math.random() * 14) + 'px';
+    p.style.background = ['linear-gradient(135deg,#ffb8cc,#e87090)','linear-gradient(135deg,#ffd0e0,#f090b0)','linear-gradient(135deg,#ffe0e8,#f8a0c0)'][Math.floor(Math.random()*3)];
+    p.style.borderRadius = Math.random() > 0.5 ? '50% 0 50% 0' : '0 50% 0 50%';
+    petalContainer.appendChild(p);
+}
+
+const { createApp } = Vue;
+
+// Input app
+createApp({
+    data() { return { name:'', loading:false }; },
+    methods: {
+        async sendGreeting() {
+            if (!this.name.trim()) { ElementPlus.ElMessage.warning('Vui lòng nhập tên!'); return; }
+            this.loading = true;
+            try {
+                const res = await fetch(`/api/greeting?name=${encodeURIComponent(this.name.trim())}`);
+                const data = await res.json();
+                if (data.success) showGreeting(data);
+                else ElementPlus.ElMessage.error(data.message || 'Có lỗi xảy ra');
+            } catch(e) { ElementPlus.ElMessage.error('Không thể kết nối server'); }
+            finally { this.loading = false; }
+        }
+    }
+}).use(ElementPlus).mount('#input-app');
+
+// Greeting app
+const greetingApp = createApp({
+    data() {
+        return {
+            greetingData: { name:'', message:'', hasPhoto:false, photoPath:null },
+            // Music
+            isPlaying: false,
+            showYtInput: false,
+            ytUrl: '',
+            currentSong: { title:'Nhạc 8/3 🌸', videoId:'' },
+            defaultVideoId: 'ZbZSe6N_BXs',
+            playlist: [],
+            playMode: 'next',
+            currentIndex: 0,
+            // Rating
+            selectedStar: 0,
+            hoverStar: 0,
+            // Wish
+            wishText: '',
+            sending: false,
+        };
+    },
+    methods: {
+        goBack() {
+            this.stopMusic();
+            document.getElementById('page-greeting').style.display = 'none';
+            document.getElementById('page-input').style.display = 'flex';
+            this.selectedStar = 0; this.wishText = '';
+            window.scrollTo({ top:0, behavior:'smooth' });
+        },
+        celebrate() {
+            launchConfetti();
+            ElementPlus.ElMessage({ message:'🌸 Chúc mừng 8/3 thật ý nghĩa!', type:'success', duration:2500 });
+        },
+        // ===== MUSIC =====
+        extractVideoId(url) {
+            const patterns = [
+                /youtube\.com\/watch\?v=([^&\s]+)/,
+                /youtu\.be\/([^?\s]+)/,
+                /youtube\.com\/embed\/([^?\s]+)/,
+                /youtube\.com\/shorts\/([^?\s]+)/
+            ];
+            for (const p of patterns) { const m = url.match(p); if (m) return m[1]; }
+            return null;
+        },
+        async loadPlaylist() {
+            try {
+                const res = await fetch('/api/admin/playlist');
+                const data = await res.json();
+                if (data.success && data.playlist && data.playlist.length > 0) {
+                    this.playlist = data.playlist;
+                    this.playMode = data.playMode || 'next';
+                } else {
+                    this.playlist = [{ id:1, title:'Nhạc 8/3 🌸', url:'https://www.youtube.com/watch?v=' + this.defaultVideoId }];
+                    this.playMode = 'loop';
+                }
+            } catch(e) {
+                this.playlist = [{ id:1, title:'Nhạc 8/3 🌸', url:'https://www.youtube.com/watch?v=' + this.defaultVideoId }];
+            }
+        },
+        playByIndex(idx) {
+            if (!this.playlist || this.playlist.length === 0) return;
+            const safeIdx = ((idx % this.playlist.length) + this.playlist.length) % this.playlist.length;
+            this.currentIndex = safeIdx;
+            const song = this.playlist[safeIdx];
+            const vid = this.extractVideoId(song.url);
+            if (vid) {
+                this.currentSong = { title: song.title, videoId: vid };
+                this.playVideo(vid);
+            }
+        },
+        onSongEnded() {
+            if (this.playMode === 'loop' || this.playlist.length <= 1) {
+                this.playByIndex(this.currentIndex);
+            } else if (this.playMode === 'shuffle') {
+                let nextIdx;
+                do { nextIdx = Math.floor(Math.random() * this.playlist.length); }
+                while (nextIdx === this.currentIndex && this.playlist.length > 1);
+                this.playByIndex(nextIdx);
+            } else {
+                this.playByIndex(this.currentIndex + 1);
+            }
+        },
+        loadYoutube() {
+            const vid = this.extractVideoId(this.ytUrl.trim());
+            if (!vid) { ElementPlus.ElMessage.warning('Link YouTube không hợp lệ!'); return; }
+            this.currentSong = { title: 'Nhạc YouTube 🎶', videoId: vid };
+            this.playVideo(vid);
+            this.showYtInput = false;
+            this.ytUrl = '';
+        },
+        playVideo(videoId) {
+            if (window.ytPlayer && window.ytPlayer.loadVideoById) {
+                window.ytPlayer.loadVideoById(videoId);
+                window.ytPlayer.playVideo();
+            } else {
+                // YT API chưa sẵn sàng, lưu lại để play sau
+                window._pendingVideoId = videoId;
+            }
+            this.isPlaying = true;
+        },
+        togglePlay() {
+            if (this.isPlaying) {
+                if (window.ytPlayer) window.ytPlayer.pauseVideo();
+                this.isPlaying = false;
+            } else {
+                if (window.ytPlayer) window.ytPlayer.playVideo();
+                else if (this.playlist.length > 0) this.playByIndex(this.currentIndex);
+                this.isPlaying = true;
+            }
+        },
+        stopMusic() {
+            if (window.ytPlayer) window.ytPlayer.stopVideo();
+            this.isPlaying = false;
+        },
+        // ===== RATING =====
+        selectStar(n) {
+            this.selectedStar = n;
+            ElementPlus.ElMessage({ message:`Cảm ơn bạn đã đánh giá ${n} sao! ${'⭐'.repeat(n)}`, type:'success', duration:1800 });
+        },
+        // ===== SUBMIT FEEDBACK =====
+        async submitFeedback() {
+            if (this.selectedStar === 0 && !this.wishText.trim()) {
+                ElementPlus.ElMessage.warning('Hãy chọn sao đánh giá hoặc viết điều ước trước nhé!');
+                return;
+            }
+            this.sending = true;
+            try {
+                const res = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: this.greetingData.name,
+                        star: this.selectedStar,
+                        wish: this.wishText.trim()
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    ElementPlus.ElMessage({ message:'💌 Đã gửi! Cảm ơn bạn rất nhiều 🌸', type:'success', duration:3000 });
+                    this.selectedStar = 0;
+                    this.wishText = '';
+                } else {
+                    ElementPlus.ElMessage.error('Gửi thất bại, thử lại nhé!');
+                }
+            } catch(e) {
+                ElementPlus.ElMessage.error('Không thể kết nối server');
+            } finally {
+                this.sending = false;
+            }
+        }
+    }
+}).use(ElementPlus);
+
+const greetingInstance = greetingApp.mount('#greeting-app');
+
+async function showGreeting(data) {
+    greetingInstance.greetingData = data;
+    greetingInstance.selectedStar = 0;
+    greetingInstance.wishText = '';
+    document.getElementById('page-input').style.display = 'none';
+    document.getElementById('page-greeting').style.display = 'flex';
+    window.scrollTo({ top:0, behavior:'smooth' });
+    setTimeout(launchConfetti, 400);
+    // Load playlist từ server rồi auto play
+    setTimeout(async () => {
+        if (!greetingInstance.isPlaying) {
+            await greetingInstance.loadPlaylist();
+            greetingInstance.playByIndex(0);
+        }
+    }, 1200);
+}
+
+// ===== YouTube IFrame API =====
+// Callback này được YouTube gọi tự động khi API sẵn sàng
+window.onYouTubeIframeAPIReady = function() {
+    window.ytPlayer = new YT.Player('yt-player', {
+        width: '1',
+        height: '1',
+        playerVars: {
+            autoplay: 0,
+            controls: 0,
+            rel: 0,
+            showinfo: 0,
+        },
+        events: {
+            onReady: function(e) {
+                // Nếu có bài đang chờ thì play luôn
+                if (window._pendingVideoId) {
+                    e.target.loadVideoById(window._pendingVideoId);
+                    e.target.playVideo();
+                    window._pendingVideoId = null;
+                }
+            },
+            onStateChange: function(e) {
+                // YT.PlayerState.ENDED = 0
+                if (e.data === YT.PlayerState.ENDED) {
+                    greetingInstance.onSongEnded();
+                }
+                // Cập nhật trạng thái play/pause
+                if (e.data === YT.PlayerState.PLAYING) {
+                    greetingInstance.isPlaying = true;
+                } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.STOPPED) {
+                    greetingInstance.isPlaying = false;
+                }
+            },
+            onError: function(e) {
+                // Bài lỗi (bị chặn, xóa...) → chuyển bài tiếp
+                console.warn('YouTube error:', e.data);
+                greetingInstance.onSongEnded();
+            }
+        }
+    });
+};
+
+function launchConfetti() {
+    const colors = ['#c8425a','#f0d080','#ff8fa0','#ffd700','#ffb6c1','#c9a84c'];
+    for (let i = 0; i < 50; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti-item';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDelay = Math.random() * 1.5 + 's';
+        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        c.style.width = c.style.height = (6 + Math.random() * 8) + 'px';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4500);
+    }
+}
+</script>
+</body>
+</html>
