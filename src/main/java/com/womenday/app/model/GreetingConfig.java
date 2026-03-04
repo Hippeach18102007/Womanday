@@ -7,13 +7,13 @@ import jakarta.persistence.*;
 public class GreetingConfig {
 
     @Id
-    @Column(name = "recipient_name", length = 200, columnDefinition = "nvarchar(200)")
+    @Column(name = "recipient_name", length = 200)
     private String recipientName;
 
-    @Column(name = "message", length = 2000, columnDefinition = "nvarchar(2000)")
+    @Column(name = "message", length = 2000)
     private String message;
 
-    @Column(name = "photo_path", length = 500, columnDefinition = "nvarchar(500)")
+    @Column(name = "photo_path", length = 500)
     private String photoPath;
 
     public GreetingConfig() {}
