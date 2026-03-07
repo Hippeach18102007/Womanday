@@ -43,12 +43,10 @@
         body { font-family: 'DM Sans', sans-serif; background: #fdf6f0; }
         .font-display { font-family: 'Cormorant Garamond', serif; }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #fce8ed; }
         ::-webkit-scrollbar-thumb { background: #e8b0bc; border-radius: 99px; }
 
-        /* Input / textarea shared style */
         .field {
             width: 100%;
             border: 1.5px solid #f0d0d8;
@@ -64,7 +62,6 @@
         .field:focus { border-color: #b83a52; box-shadow: 0 0 0 3px rgba(184,58,82,0.1); }
         textarea.field { resize: vertical; }
 
-        /* Toast */
         #toast {
             position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
             background: #2d2d2d; color: #fff;
@@ -79,7 +76,6 @@
         #toast.warning::before { content: '⚠  '; color: #fbbf24; }
         #toast.error::before   { content: '✕  '; color: #f87171; }
 
-        /* Dialog backdrop */
         #dialog-backdrop {
             position: fixed; inset: 0; z-index: 800;
             background: rgba(50,20,30,0.35); backdrop-filter: blur(4px);
@@ -97,7 +93,6 @@
             to   { opacity:1; transform: scale(1) translateY(0); }
         }
 
-        /* Pill buttons */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
             gap: .35rem; border-radius: 50px; font-family: 'DM Sans', sans-serif;
@@ -119,24 +114,19 @@
         .btn-mode { background: #fff; color: #888; border-color: #e8d0d8; padding: .35rem .9rem; }
         .btn-mode.active { background: #b83a52; color: #fff; border-color: #b83a52; }
 
-        /* Table rows */
         .trow td { transition: background .15s; }
         .trow:hover td { background: #fffafa; }
 
-        /* Tag */
         .tag { display:inline-flex; align-items:center; gap:.3rem; border-radius:50px; font-size:.75rem; font-weight:500; padding:.2rem .65rem; }
         .tag-success { background:#e6f7ee; color:#1a7a40; }
         .tag-info    { background:#f0f0f5; color:#666; }
         .tag-warn    { background:#fff7e6; color:#d48806; }
 
-        /* Avatar */
         .avatar { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid #f5dde4; flex-shrink:0; }
         .avatar-ph { width:42px; height:42px; border-radius:50%; background:#f9e8ed; border:2px dashed #e0a0b0; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
 
-        /* Divider */
         .divider { border: none; border-top: 1.5px dashed #f5dde4; margin: 1.2rem 0; }
 
-        /* Section card fade-in */
         .card { animation: fadeUp .35s ease both; }
         @keyframes fadeUp {
             from { opacity:0; transform: translateY(10px); }
@@ -145,6 +135,62 @@
         .card:nth-child(2) { animation-delay:.07s; }
         .card:nth-child(3) { animation-delay:.14s; }
         .card:nth-child(4) { animation-delay:.21s; }
+        .card:nth-child(5) { animation-delay:.28s; }
+
+        /* ── Photo Upload Grid ── */
+        .photo-person-card {
+            border: 1.5px solid #f0d0d8;
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: box-shadow .2s, border-color .2s;
+        }
+        .photo-person-card:hover { box-shadow: 0 4px 20px rgba(184,58,82,0.1); border-color: #e8b0bc; }
+
+        .photo-upload-zone {
+            position: relative;
+            width: 70px; height: 70px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .photo-upload-zone img,
+        .photo-upload-zone .ph {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2.5px solid #f5dde4;
+        }
+        .photo-upload-zone .ph {
+            background: #f9e8ed;
+            border: 2px dashed #e0a0b0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+        }
+        .photo-upload-zone .overlay {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: rgba(184,58,82,0.6);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity .2s;
+            color: #fff; font-size: .72rem; font-weight: 600;
+            text-align: center; line-height: 1.3;
+            pointer-events: none;
+        }
+        .photo-upload-zone:hover .overlay { opacity: 1; }
+        .photo-upload-zone input[type=file] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; border-radius: 50%;
+        }
+
+        .upload-status {
+            display: inline-flex; align-items: center; gap: .3rem;
+            font-size: .73rem; font-weight: 500; padding: .18rem .6rem;
+            border-radius: 50px; margin-top: .3rem;
+        }
+        .upload-status.has-photo  { background: #e6f7ee; color: #1a7a40; }
+        .upload-status.no-photo   { background: #f5f5f5; color: #999; }
+        .upload-status.uploading  { background: #fff7e6; color: #d48806; }
     </style>
 </head>
 <body class="min-h-screen py-10 px-4">
@@ -166,8 +212,6 @@
             <h2 class="font-display text-2xl text-rose font-semibold">🌹 Người Đặc Biệt</h2>
             <button class="btn btn-primary" onclick="openAddDialog()">+ Thêm người</button>
         </div>
-
-        <!-- Table -->
         <div class="overflow-x-auto -mx-1">
             <table class="w-full text-sm" id="people-table">
                 <thead>
@@ -185,11 +229,42 @@
         </div>
     </div>
 
-    <!-- ── SECTION 2: Lời chúc chung ── -->
+    <!-- ── SECTION 2: Upload Ảnh ── -->
+    <div class="card bg-white rounded-xl3 p-7 mb-5 shadow-card border border-petal">
+        <div class="flex items-center justify-between mb-1 flex-wrap gap-3">
+            <div>
+                <h2 class="font-display text-2xl text-rose font-semibold">📸 Ảnh Cho Từng Người</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Nhấn vào ảnh để tải ảnh mới — hoặc chọn nhanh bên dưới</p>
+            </div>
+            <span class="tag tag-info" id="photo-section-count"></span>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Quick upload -->
+        <div class="rounded-xl border border-dashed border-rose-mid bg-rose-light p-4 mb-5">
+            <p class="text-xs font-semibold text-rose mb-3">⚡ Tải ảnh nhanh</p>
+            <div class="flex items-center gap-3 flex-wrap">
+                <select class="field" id="photo-select-name" style="max-width:220px">
+                    <option value="">— Chọn người —</option>
+                </select>
+                <label class="btn btn-primary cursor-pointer" for="bulk-photo-input">
+                    📷 Chọn ảnh
+                    <input type="file" id="bulk-photo-input" class="hidden" accept="image/*" onchange="uploadBulkPhoto(event)">
+                </label>
+            </div>
+        </div>
+
+        <!-- Per-person photo grid -->
+        <div id="photo-grid" class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr))">
+            <p class="text-center text-gray-300 italic text-sm py-6 col-span-full">Đang tải danh sách…</p>
+        </div>
+    </div>
+
+    <!-- ── SECTION 3: Lời chúc chung ── -->
     <div class="card bg-white rounded-xl3 p-7 mb-5 shadow-card border border-petal">
         <h2 class="font-display text-2xl text-rose font-semibold mb-1">💌 Lời Chúc Chung</h2>
         <p class="text-xs text-gray-400 mb-4">Dành cho những người không có trong danh sách đặc biệt.</p>
-
         <textarea class="field mb-3" id="general-msg" rows="4" placeholder="Nhập lời chúc chung…"></textarea>
         <button class="btn btn-primary" id="save-general-btn" onclick="saveGeneralMessage()">💾 Lưu lời chúc chung</button>
 
@@ -203,7 +278,7 @@
         <div id="custom-tags" class="flex flex-wrap gap-2"></div>
     </div>
 
-    <!-- ── SECTION 3: Playlist ── -->
+    <!-- ── SECTION 4: Playlist ── -->
     <div class="card bg-white rounded-xl3 p-7 mb-5 shadow-card border border-petal">
         <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
             <h2 class="font-display text-2xl text-rose font-semibold">🎵 Playlist Nhạc</h2>
@@ -215,8 +290,6 @@
             </div>
         </div>
         <p class="text-xs text-gray-400 mb-5">Thêm link YouTube — hết bài sẽ tự chuyển theo chế độ.</p>
-
-        <!-- Thêm bài -->
         <div class="border border-dashed border-rose-mid rounded-xl p-4 mb-5">
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <div>
@@ -230,12 +303,9 @@
             </div>
             <button class="btn btn-primary w-full" onclick="addSong()">+ Thêm vào playlist</button>
         </div>
-
-        <!-- Danh sách bài -->
         <div id="playlist-list">
             <p class="text-center text-gray-300 italic text-sm py-6">Chưa có bài — thêm link YouTube phía trên</p>
         </div>
-
         <div id="save-playlist-wrap" class="mt-4 text-right hidden">
             <button class="btn btn-primary" id="save-playlist-btn" onclick="savePlaylist()">💾 Lưu playlist</button>
         </div>
@@ -255,14 +325,12 @@
         </div>
     </div>
 
-</div><!-- /app -->
+</div>
 
 <!-- ── DIALOG ── -->
 <div id="dialog-backdrop" onclick="closeDialogOnBg(event)">
     <div id="dialog-box" class="p-7">
         <h3 class="font-display text-2xl text-rose font-bold mb-5" id="dialog-title">Thêm người đặc biệt</h3>
-
-        <!-- Avatar preview -->
         <div class="flex flex-col items-center gap-2 mb-5">
             <div class="relative">
                 <img id="d-avatar-img" src="" class="hidden w-24 h-24 rounded-full object-cover border-4 border-petal">
@@ -273,18 +341,15 @@
                 <input type="file" id="d-photo-input" class="hidden" accept="image/*" onchange="handlePhotoChange(event)">
             </label>
         </div>
-
         <div class="mb-4">
             <label class="block text-xs font-semibold text-gray-500 mb-1.5">Họ và tên *</label>
             <input class="field" id="d-name" placeholder="Nguyễn Thị …">
             <p id="d-name-note" class="text-xs text-gray-400 mt-1 hidden">Không thể đổi tên — xóa và thêm lại nếu cần</p>
         </div>
-
         <div class="mb-6">
             <label class="block text-xs font-semibold text-gray-500 mb-1.5">Lời chúc riêng</label>
             <textarea class="field" id="d-message" rows="4" placeholder="Nhập lời chúc dành riêng…"></textarea>
         </div>
-
         <div class="flex justify-end gap-2">
             <button class="btn btn-ghost" onclick="closeDialog()">Hủy</button>
             <button class="btn btn-primary" id="d-submit-btn" onclick="submitDialog()">➕ Thêm mới</button>
@@ -292,20 +357,16 @@
     </div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-    // ─── State ───────────────────────────────────────────────
     let specialPeople = [];
     let customList    = [];
     let playlist      = [];
     let playMode      = 'next';
-
     let isEditing     = false;
     let dialogPendingFile = null;
 
-    // ─── Toast ────────────────────────────────────────────────
     function toast(msg, type='success') {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -314,7 +375,6 @@
         el._t = setTimeout(() => el.classList.remove('show'), 2800);
     }
 
-    // ─── Load data ────────────────────────────────────────────
     async function loadData() {
         try {
             const res  = await fetch('/api/admin/special-recipients');
@@ -340,8 +400,8 @@
 
             renderPeopleTable();
             renderCustomTags();
+            renderPhotoGrid();
 
-            // Playlist
             try {
                 const pr = await fetch('/api/admin/playlist');
                 const pd = await pr.json();
@@ -356,7 +416,6 @@
         } catch(e) { console.error(e); }
     }
 
-    // ─── People Table ─────────────────────────────────────────
     function renderPeopleTable() {
         const tbody = document.getElementById('people-tbody');
         if (!specialPeople.length) {
@@ -393,6 +452,108 @@
     `).join('');
     }
 
+    // ─── Photo Grid ───────────────────────────────────────────
+    function renderPhotoGrid() {
+        const grid     = document.getElementById('photo-grid');
+        const select   = document.getElementById('photo-select-name');
+        const countEl  = document.getElementById('photo-section-count');
+
+        if (!specialPeople.length) {
+            grid.innerHTML = `<p class="text-center text-gray-300 italic text-sm py-6 col-span-full">Chưa có ai — hãy thêm người đặc biệt trước</p>`;
+            countEl.textContent = '';
+            return;
+        }
+
+        const hasPhoto = specialPeople.filter(p => p.previewUrl).length;
+        countEl.textContent = `${hasPhoto}/${specialPeople.length} người có ảnh`;
+
+        select.innerHTML = '<option value="">— Chọn người —</option>' +
+            specialPeople.map(p =>
+                `<option value="${p.name}">${p.name}${p.previewUrl ? ' ✓' : ''}</option>`
+            ).join('');
+
+        grid.innerHTML = specialPeople.map(p => {
+            const safeId = encodeURIComponent(p.name);
+            const safeName = p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return `
+            <div class="photo-person-card">
+                <div class="photo-upload-zone" title="Nhấn để đổi ảnh">
+                    ${p.previewUrl
+                ? `<img src="${p.previewUrl}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                : ''}
+                    <div class="ph" ${p.previewUrl ? 'style="display:none"' : ''}>👩</div>
+                    <div class="overlay">📷<br>Đổi ảnh</div>
+                    <input type="file" accept="image/*"
+                        onchange="uploadInlinePhoto(event, '${safeName}')">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-gray-800 text-sm truncate">${p.name}</div>
+                    <div>
+                        <span class="upload-status ${p.previewUrl ? 'has-photo' : 'no-photo'}"
+                            id="pstatus-${safeId}">
+                            ${p.previewUrl ? '✓ Đã có ảnh' : '◌ Chưa có ảnh'}
+                        </span>
+                    </div>
+                    ${p.previewUrl ? `
+                    <div class="mt-2">
+                        <button class="btn btn-danger" style="font-size:.72rem;padding:.25rem .65rem"
+                            onclick="removePhoto('${safeName}')">🗑 Xóa ảnh</button>
+                    </div>` : ''}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function uploadInlinePhoto(e, name) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const sid = document.getElementById('pstatus-' + encodeURIComponent(name));
+        if (sid) { sid.className = 'upload-status uploading'; sid.textContent = '⏳ Đang tải lên…'; }
+        try {
+            const fd = new FormData();
+            fd.append('name', name);
+            fd.append('file', file);
+            const res  = await fetch('/api/admin/photo', { method:'POST', body: fd });
+            const data = await res.json();
+            if (data.success) { toast(`Đã cập nhật ảnh cho ${name}!`); await loadData(); }
+            else { toast('Lỗi khi tải ảnh', 'error'); if (sid) { sid.className='upload-status no-photo'; sid.textContent='◌ Chưa có ảnh'; } }
+        } catch { toast('Lỗi kết nối', 'error'); }
+    }
+
+    async function uploadBulkPhoto(e) {
+        const file = e.target.files[0];
+        const name = document.getElementById('photo-select-name').value;
+        if (!file) return;
+        if (!name) { toast('Vui lòng chọn người trước!', 'warning'); e.target.value = ''; return; }
+        toast(`Đang tải ảnh cho ${name}…`, 'warning');
+        try {
+            const fd = new FormData();
+            fd.append('name', name);
+            fd.append('file', file);
+            const res  = await fetch('/api/admin/photo', { method:'POST', body: fd });
+            const data = await res.json();
+            if (data.success) {
+                toast(`Đã cập nhật ảnh cho ${name}!`);
+                document.getElementById('photo-select-name').value = '';
+                e.target.value = '';
+                await loadData();
+            } else toast('Lỗi khi tải ảnh', 'error');
+        } catch { toast('Lỗi kết nối', 'error'); }
+    }
+
+    async function removePhoto(name) {
+        if (!confirm(`Xóa ảnh của "${name}"?`)) return;
+        try {
+            const res  = await fetch('/api/admin/photo-remove', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ name })
+            });
+            const data = await res.json();
+            if (data.success) { toast('Đã xóa ảnh'); await loadData(); }
+            else toast('Lỗi khi xóa', 'error');
+        } catch { toast('Lỗi kết nối', 'error'); }
+    }
+
     // ─── Custom Tags ──────────────────────────────────────────
     function renderCustomTags() {
         const wrap = document.getElementById('custom-tags');
@@ -400,15 +561,13 @@
         <span class="tag tag-warn flex items-center gap-1">
             ${item.name}: ${item.msg.slice(0,30)}…
             <button onclick='removeCustomMsg("${item.name}")' class="ml-1 text-xs opacity-60 hover:opacity-100">✕</button>
-        </span>
-    `).join('');
+        </span>`).join('');
     }
 
-    // ─── General message ──────────────────────────────────────
     async function saveGeneralMessage() {
         const msg = document.getElementById('general-msg').value;
         const btn = document.getElementById('save-general-btn');
-        btn.disabled = true; btn.textContent = '저장 중…';
+        btn.disabled = true; btn.textContent = 'Đang lưu…';
         try {
             await fetch('/api/admin/message', {
                 method:'POST', headers:{'Content-Type':'application/json'},
@@ -418,7 +577,6 @@
         } finally { btn.disabled = false; btn.textContent = '💾 Lưu lời chúc chung'; }
     }
 
-    // ─── Custom message ───────────────────────────────────────
     async function addCustomMsg() {
         const name = document.getElementById('new-person-name').value.trim();
         const msg  = document.getElementById('new-person-msg').value.trim();
@@ -436,12 +594,8 @@
             toast('Đã thêm!');
         }
     }
-    function removeCustomMsg(name) {
-        customList = customList.filter(i => i.name !== name);
-        renderCustomTags();
-    }
+    function removeCustomMsg(name) { customList = customList.filter(i => i.name !== name); renderCustomTags(); }
 
-    // ─── Delete person ────────────────────────────────────────
     async function confirmDelete(name) {
         if (!confirm(`Bạn có chắc muốn xóa "${name}" khỏi danh sách đặc biệt không?`)) return;
         await fetch('/api/admin/special-remove', {
@@ -452,24 +606,17 @@
         await loadData();
     }
 
-    // ─── Playlist ─────────────────────────────────────────────
-    function setPlayMode(mode) {
-        playMode = mode;
-        setPlayModeUI(mode);
-    }
+    function setPlayMode(mode) { playMode = mode; setPlayModeUI(mode); }
     function setPlayModeUI(mode) {
-        ['loop','next','shuffle'].forEach(m => {
-            const btn = document.getElementById('mode-'+m);
-            btn.classList.toggle('active', m === mode);
-        });
+        ['loop','next','shuffle'].forEach(m =>
+            document.getElementById('mode-'+m).classList.toggle('active', m === mode));
     }
     function renderPlaylist() {
         const wrap = document.getElementById('playlist-list');
         const saveWrap = document.getElementById('save-playlist-wrap');
         if (!playlist.length) {
             wrap.innerHTML = `<p class="text-center text-gray-300 italic text-sm py-6">Chưa có bài — thêm link YouTube phía trên</p>`;
-            saveWrap.classList.add('hidden');
-            return;
+            saveWrap.classList.add('hidden'); return;
         }
         saveWrap.classList.remove('hidden');
         wrap.innerHTML = playlist.map((song, idx) => `
@@ -484,25 +631,19 @@
                 <button class="btn btn-neutral text-xs" onclick="moveSong(${idx},1)"  ${idx===playlist.length-1?'disabled':''}>↓</button>
             </div>
             <button class="btn btn-danger text-xs" onclick="removeSong(${idx})">🗑</button>
-        </div>
-    `).join('');
+        </div>`).join('');
     }
     function addSong() {
         const title = document.getElementById('new-song-title').value.trim();
         const url   = document.getElementById('new-song-url').value.trim();
         if (!title || !url) { toast('Vui lòng nhập tên bài và link YouTube', 'warning'); return; }
-        if (!url.includes('youtube') && !url.includes('youtu.be')) {
-            toast('Chỉ hỗ trợ link YouTube!', 'warning'); return;
-        }
+        if (!url.includes('youtube') && !url.includes('youtu.be')) { toast('Chỉ hỗ trợ link YouTube!', 'warning'); return; }
         playlist.push({ id: Date.now(), title, url });
         document.getElementById('new-song-title').value = '';
         document.getElementById('new-song-url').value   = '';
         renderPlaylist();
     }
-    function removeSong(idx) {
-        playlist.splice(idx, 1);
-        renderPlaylist();
-    }
+    function removeSong(idx) { playlist.splice(idx, 1); renderPlaylist(); }
     function moveSong(idx, dir) {
         const ni = idx + dir;
         if (ni < 0 || ni >= playlist.length) return;
@@ -523,7 +664,6 @@
         finally { btn.disabled = false; btn.textContent = '💾 Lưu playlist'; }
     }
 
-    // ─── Preview ──────────────────────────────────────────────
     async function previewGreeting() {
         const name = document.getElementById('preview-name').value.trim();
         if (!name) { toast('Nhập tên để xem trước', 'warning'); return; }
@@ -533,16 +673,12 @@
             document.getElementById('pr-name').textContent = data.name;
             document.getElementById('pr-msg').textContent  = data.message;
             const photoEl = document.getElementById('pr-photo');
-            if (data.hasPhoto) {
-                photoEl.className = 'tag tag-success'; photoEl.textContent = '✓ Có ảnh';
-            } else {
-                photoEl.className = 'tag tag-info'; photoEl.textContent = '◌ Không có ảnh';
-            }
+            if (data.hasPhoto) { photoEl.className = 'tag tag-success'; photoEl.textContent = '✓ Có ảnh'; }
+            else { photoEl.className = 'tag tag-info'; photoEl.textContent = '◌ Không có ảnh'; }
             document.getElementById('preview-result').classList.remove('hidden');
         }
     }
 
-    // ─── Dialog ───────────────────────────────────────────────
     function openAddDialog() {
         isEditing = false; dialogPendingFile = null;
         document.getElementById('dialog-title').textContent = '+ Thêm người đặc biệt';
@@ -578,12 +714,8 @@
         document.getElementById('d-photo-input').value = '';
         document.getElementById('dialog-backdrop').classList.add('open');
     }
-    function closeDialog() {
-        document.getElementById('dialog-backdrop').classList.remove('open');
-    }
-    function closeDialogOnBg(e) {
-        if (e.target === document.getElementById('dialog-backdrop')) closeDialog();
-    }
+    function closeDialog() { document.getElementById('dialog-backdrop').classList.remove('open'); }
+    function closeDialogOnBg(e) { if (e.target === document.getElementById('dialog-backdrop')) closeDialog(); }
     function handlePhotoChange(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -601,7 +733,6 @@
         const name = document.getElementById('d-name').value.trim();
         const msg  = document.getElementById('d-message').value;
         if (!name) { toast('Vui lòng nhập tên!', 'warning'); return; }
-
         const btn = document.getElementById('d-submit-btn');
         btn.disabled = true; btn.textContent = 'Đang lưu…';
         try {
@@ -637,7 +768,6 @@
         }
     }
 
-    // ─── Init ─────────────────────────────────────────────────
     loadData();
 </script>
 </body>
