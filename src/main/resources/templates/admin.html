@@ -1,476 +1,644 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Quản Lý Lời Chúc 8/3</title>
+    <title>Admin – Quản Lý Lời Chúc 8/3</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Cormorant Garamond', 'serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        rose: {
+                            DEFAULT: '#b83a52',
+                            light: '#f7e8ec',
+                            mid: '#e8b0bc',
+                            dark: '#8a2a3d',
+                        },
+                        blush: '#fdf0f3',
+                        petal: '#fce8ed',
+                        cream: '#fdf6f0',
+                        gold: { DEFAULT: '#b8924a', light: '#f8f0e0' },
+                    },
+                    boxShadow: {
+                        card: '0 2px 24px 0 rgba(184,58,82,0.07)',
+                        'card-hover': '0 8px 32px 0 rgba(184,58,82,0.13)',
+                    },
+                    borderRadius: {
+                        xl2: '1.2rem',
+                        xl3: '1.6rem',
+                    }
+                }
+            }
+        };
+    </script>
     <style>
-        :root { --rose:#c8425a; --gold:#c9a84c; --bg:#fdf6f0; --card:#ffffff; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Be Vietnam Pro',sans-serif; background:var(--bg); min-height:100vh; padding:2rem; }
+        body { font-family: 'DM Sans', sans-serif; background: #fdf6f0; }
+        .font-display { font-family: 'Cormorant Garamond', serif; }
 
-        .page-header { max-width:960px; margin:0 auto 2rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-        .page-title { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--rose); }
-        .page-subtitle { font-size:0.85rem; color:#999; }
-        .admin-container { max-width:960px; margin:0 auto; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #fce8ed; }
+        ::-webkit-scrollbar-thumb { background: #e8b0bc; border-radius: 99px; }
 
-        .section-card { background:var(--card); border-radius:16px; padding:1.8rem; margin-bottom:1.5rem; border:1px solid #f0e0e8; box-shadow:0 4px 20px rgba(200,66,90,0.06); }
-        .section-title { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--rose); margin-bottom:1.2rem; display:flex; align-items:center; justify-content:space-between; }
-        .section-title-left { display:flex; align-items:center; gap:0.5rem; }
+        /* Input / textarea shared style */
+        .field {
+            width: 100%;
+            border: 1.5px solid #f0d0d8;
+            border-radius: 10px;
+            padding: 0.55rem 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: #333;
+            background: #fff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .field:focus { border-color: #b83a52; box-shadow: 0 0 0 3px rgba(184,58,82,0.1); }
+        textarea.field { resize: vertical; }
 
-        /* Table */
-        .people-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
-        .people-table th { background:#fff0f3; color:var(--rose); font-weight:600; padding:0.7rem 1rem; text-align:left; border-bottom:2px solid #f5dde4; }
-        .people-table td { padding:0.8rem 1rem; border-bottom:1px solid #fce8ec; vertical-align:middle; }
-        .people-table tr:last-child td { border-bottom:none; }
-        .people-table tr:hover td { background:#fffafa; }
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+            background: #2d2d2d; color: #fff;
+            padding: .65rem 1.3rem; border-radius: 50px;
+            font-size: .85rem; font-family: 'DM Sans', sans-serif;
+            opacity: 0; transform: translateY(8px);
+            transition: opacity .25s, transform .25s;
+            pointer-events: none;
+        }
+        #toast.show { opacity: 1; transform: translateY(0); }
+        #toast.success::before { content: '✓  '; color: #6ee7b7; }
+        #toast.warning::before { content: '⚠  '; color: #fbbf24; }
+        #toast.error::before   { content: '✕  '; color: #f87171; }
 
-        .avatar-cell { display:flex; align-items:center; gap:0.8rem; }
-        .avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid #f5dde4; flex-shrink:0; }
-        .avatar-placeholder { width:44px; height:44px; border-radius:50%; background:#f9e8ed; border:2px dashed #e0a0b0; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
-        .person-name-cell { font-weight:500; color:#333; }
+        /* Dialog backdrop */
+        #dialog-backdrop {
+            position: fixed; inset: 0; z-index: 800;
+            background: rgba(50,20,30,0.35); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+        }
+        #dialog-backdrop.open { display: flex; }
+        #dialog-box {
+            background: #fff; border-radius: 1.4rem;
+            width: min(520px, 92vw);
+            box-shadow: 0 24px 80px rgba(184,58,82,0.18);
+            animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes popIn {
+            from { opacity:0; transform: scale(.92) translateY(12px); }
+            to   { opacity:1; transform: scale(1) translateY(0); }
+        }
 
-        .msg-preview { color:#888; font-size:0.82rem; max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .msg-empty { color:#ccc; font-style:italic; font-size:0.82rem; }
+        /* Pill buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: .35rem; border-radius: 50px; font-family: 'DM Sans', sans-serif;
+            font-size: .83rem; font-weight: 500; cursor: pointer;
+            transition: all .18s; border: 1.5px solid transparent; white-space: nowrap;
+        }
+        .btn-primary { background: #b83a52; color: #fff; padding: .5rem 1.2rem; }
+        .btn-primary:hover { background: #8a2a3d; }
+        .btn-primary:disabled { opacity:.55; cursor:not-allowed; }
+        .btn-ghost { background: #fff; color: #b83a52; border-color: #f0c8d0; padding: .4rem 1rem; }
+        .btn-ghost:hover { background: #fce8ed; }
+        .btn-danger { background: #fff1f0; color: #cf1322; border-color: #ffa39e; padding: .38rem .85rem; }
+        .btn-danger:hover { background: #ffe0de; }
+        .btn-warn  { background: #fff7e6; color: #d48806; border-color: #ffd591; padding: .38rem .85rem; }
+        .btn-warn:hover { background: #feefc8; }
+        .btn-neutral { background: #f5f5f5; color: #555; border-color: #e8e8e8; padding: .32rem .7rem; }
+        .btn-neutral:hover { background: #ececec; }
+        .btn-neutral:disabled { opacity: .4; cursor: not-allowed; }
+        .btn-mode { background: #fff; color: #888; border-color: #e8d0d8; padding: .35rem .9rem; }
+        .btn-mode.active { background: #b83a52; color: #fff; border-color: #b83a52; }
 
-        .action-btns { display:flex; gap:0.5rem; }
-        .btn-edit { background:#fff7e6!important; color:#d48806!important; border-color:#ffd591!important; border-radius:6px!important; font-size:0.8rem!important; }
-        .btn-delete { background:#fff1f0!important; color:#cf1322!important; border-color:#ffa39e!important; border-radius:6px!important; font-size:0.8rem!important; }
-        .btn-add { background:linear-gradient(135deg,var(--rose),#a03050)!important; color:white!important; border:none!important; border-radius:8px!important; }
+        /* Table rows */
+        .trow td { transition: background .15s; }
+        .trow:hover td { background: #fffafa; }
 
-        .save-btn { background:var(--rose)!important; border-color:var(--rose)!important; color:white!important; border-radius:50px!important; }
-        .back-link { display:inline-flex; align-items:center; gap:0.4rem; color:var(--rose); text-decoration:none; font-size:0.9rem; padding:0.5rem 1rem; border-radius:50px; border:1px solid #f0c8d0; background:white; transition:all 0.2s; }
-        .back-link:hover { background:var(--rose); color:white; border-color:var(--rose); }
+        /* Tag */
+        .tag { display:inline-flex; align-items:center; gap:.3rem; border-radius:50px; font-size:.75rem; font-weight:500; padding:.2rem .65rem; }
+        .tag-success { background:#e6f7ee; color:#1a7a40; }
+        .tag-info    { background:#f0f0f5; color:#666; }
+        .tag-warn    { background:#fff7e6; color:#d48806; }
 
-        /* Dialog */
-        .dialog-photo-wrap { display:flex; flex-direction:column; align-items:center; gap:0.8rem; margin-bottom:1rem; }
-        .dialog-avatar { width:90px; height:90px; border-radius:50%; object-fit:cover; border:3px solid #f5dde4; }
-        .dialog-avatar-ph { width:90px; height:90px; border-radius:50%; background:#f9e8ed; border:2px dashed #e0a0b0; display:flex; align-items:center; justify-content:center; font-size:2.5rem; }
+        /* Avatar */
+        .avatar { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid #f5dde4; flex-shrink:0; }
+        .avatar-ph { width:42px; height:42px; border-radius:50%; background:#f9e8ed; border:2px dashed #e0a0b0; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
 
-        .form-label { font-size:0.85rem; font-weight:500; color:#555; margin-bottom:0.4rem; }
+        /* Divider */
+        .divider { border: none; border-top: 1.5px dashed #f5dde4; margin: 1.2rem 0; }
 
-        @media(max-width:640px) { .people-table th:nth-child(3), .people-table td:nth-child(3) { display:none; } }
-
-        .playlist-row { display:grid; grid-template-columns:1fr auto auto; gap:.8rem; align-items:center; padding:.7rem 0; border-bottom:1px solid #fce8ec; }
-        .playlist-row:last-child { border-bottom:none; }
-        .song-title { font-size:.9rem; font-weight:500; color:#333; }
-        .song-url { font-size:.75rem; color:#aaa; margin-top:.15rem; }
-        .song-order { display:flex; gap:.3rem; }
-        .btn-order { background:white!important; border:1px solid #f0c8d0!important; color:var(--rose)!important; border-radius:6px!important; padding:.2rem .5rem!important; font-size:.8rem!important; min-width:28px!important; }
-        .btn-del-song { background:#fff1f0!important; color:#cf1322!important; border-color:#ffa39e!important; border-radius:6px!important; font-size:.8rem!important; }
-        .mode-btn { border-radius:50px!important; font-size:.82rem!important; }
-        .mode-btn.active { background:var(--rose)!important; color:white!important; border-color:var(--rose)!important; }
+        /* Section card fade-in */
+        .card { animation: fadeUp .35s ease both; }
+        @keyframes fadeUp {
+            from { opacity:0; transform: translateY(10px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+        .card:nth-child(2) { animation-delay:.07s; }
+        .card:nth-child(3) { animation-delay:.14s; }
+        .card:nth-child(4) { animation-delay:.21s; }
     </style>
 </head>
-<body>
+<body class="min-h-screen py-10 px-4">
 
-<div id="admin-app">
-    <div class="page-header">
+<div id="app" class="max-w-3xl mx-auto">
+
+    <!-- ── Header ── -->
+    <div class="flex items-start justify-between flex-wrap gap-3 mb-8">
         <div>
-            <div class="page-title">⚙ Quản Lý 8/3</div>
-            <div class="page-subtitle">Cài đặt lời chúc & ảnh cho từng người</div>
+            <h1 class="font-display text-4xl font-bold text-rose leading-tight">Quản Lý 8/3</h1>
+            <p class="text-sm text-rose-mid mt-0.5">Cài đặt lời chúc & ảnh cho từng người</p>
         </div>
-        <a href="/" class="back-link">← Về trang chủ</a>
+        <a href="/" class="btn btn-ghost">← Về trang chủ</a>
     </div>
 
-    <div class="admin-container">
+    <!-- ── SECTION 1: Người đặc biệt ── -->
+    <div class="card bg-white rounded-xl3 p-7 mb-5 shadow-card border border-petal">
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="font-display text-2xl text-rose font-semibold">🌹 Người Đặc Biệt</h2>
+            <button class="btn btn-primary" onclick="openAddDialog()">+ Thêm người</button>
+        </div>
 
-        <!-- ===== SECTION 1: Người Đặc Biệt ===== -->
-        <div class="section-card">
-            <div class="section-title">
-                <span class="section-title-left">🌹 Người Đặc Biệt (có ảnh riêng)</span>
-                <el-button class="btn-add" size="small" @click="openAddDialog">
-                    + Thêm người
-                </el-button>
-            </div>
-
-            <table class="people-table">
+        <!-- Table -->
+        <div class="overflow-x-auto -mx-1">
+            <table class="w-full text-sm" id="people-table">
                 <thead>
-                    <tr>
-                        <th style="width:260px">Tên</th>
-                        <th style="width:280px">Lời chúc</th>
-                        <th>Ảnh</th>
-                        <th style="width:130px">Thao tác</th>
-                    </tr>
+                <tr class="bg-rose-light">
+                    <th class="text-left text-rose font-semibold px-4 py-2.5 rounded-l-lg" style="width:220px">Tên</th>
+                    <th class="text-left text-rose font-semibold px-4 py-2.5" style="width:260px">Lời chúc</th>
+                    <th class="text-left text-rose font-semibold px-4 py-2.5">Ảnh</th>
+                    <th class="text-left text-rose font-semibold px-4 py-2.5 rounded-r-lg" style="width:120px">Thao tác</th>
+                </tr>
                 </thead>
-                <tbody>
-                    <tr v-for="person in specialPeople" :key="person.name">
-                        <td>
-                            <div class="avatar-cell">
-                                <img v-if="person.previewUrl" :src="person.previewUrl" class="avatar" @error="e=>e.target.style.display='none'" />
-                                <div v-else class="avatar-placeholder">👩</div>
-                                <span class="person-name-cell">{{ person.name }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div v-if="person.message" class="msg-preview" :title="person.message">{{ person.message }}</div>
-                            <div v-else class="msg-empty">Chưa có lời chúc riêng</div>
-                        </td>
-                        <td>
-                            <el-tag v-if="person.previewUrl" type="success" size="small">✓ Có ảnh</el-tag>
-                            <el-tag v-else type="info" size="small">Chưa có</el-tag>
-                        </td>
-                        <td>
-                            <div class="action-btns">
-                                <el-button class="btn-edit" size="small" @click="openEditDialog(person)">✏ Sửa</el-button>
-                                <el-button class="btn-delete" size="small" @click="confirmDelete(person)">🗑 Xóa</el-button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-if="specialPeople.length === 0">
-                        <td colspan="4" style="text-align:center;color:#ccc;padding:2rem;font-style:italic">Chưa có ai trong danh sách đặc biệt</td>
-                    </tr>
+                <tbody id="people-tbody">
+                <tr><td colspan="4" class="text-center text-gray-300 italic py-8 text-sm">Đang tải…</td></tr>
                 </tbody>
             </table>
         </div>
-
-        <!-- ===== SECTION 2: Lời chúc chung ===== -->
-        <div class="section-card">
-            <div class="section-title"><span class="section-title-left">💌 Lời Chúc Chung</span></div>
-            <p style="font-size:0.85rem;color:#999;margin-bottom:1rem">
-                Những người không có trong danh sách đặc biệt sẽ nhận lời chúc này.
-            </p>
-            <el-input v-model="generalMessage" type="textarea" :rows="4" placeholder="Nhập lời chúc chung..." />
-            <el-button class="save-btn" size="small" style="margin-top:0.6rem" :loading="savingGeneral" @click="saveGeneralMessage">
-                💾 Lưu lời chúc chung
-            </el-button>
-
-            <el-divider><span style="font-size:0.8rem;color:#ccc">Lời chúc riêng cho tên cụ thể (không có ảnh)</span></el-divider>
-            <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:0.8rem;align-items:flex-start;margin-bottom:0.8rem">
-                <el-input v-model="newPersonName" placeholder="Tên người..." />
-                <el-input v-model="newPersonMsg" type="textarea" :rows="2" placeholder="Lời chúc riêng..." />
-                <el-button class="save-btn" @click="addCustomMsg">+ Thêm</el-button>
-            </div>
-            <div v-if="customList.length > 0">
-                <el-tag v-for="item in customList" :key="item.name" closable @close="removeCustomMsg(item.name)" style="margin:0.3rem" type="warning">
-                    {{ item.name }}: {{ item.msg.slice(0,30) }}...
-                </el-tag>
-            </div>
-        </div>
-
-        <!-- ===== SECTION 3: Playlist Nhạc ===== -->
-        <div class="section-card">
-            <div class="section-title">
-                <span class="section-title-left">🎵 Playlist Nhạc</span>
-                <div style="display:flex;gap:.5rem;align-items:center">
-                    <span style="font-size:.78rem;color:#aaa">Chế độ:</span>
-                    <el-button class="mode-btn" :class="{active: playMode==='loop'}" size="small" @click="setPlayMode('loop')">🔁 Lặp lại</el-button>
-                    <el-button class="mode-btn" :class="{active: playMode==='next'}" size="small" @click="setPlayMode('next')">⏭ Bài tiếp</el-button>
-                    <el-button class="mode-btn" :class="{active: playMode==='shuffle'}" size="small" @click="setPlayMode('shuffle')">🔀 Ngẫu nhiên</el-button>
-                </div>
-            </div>
-
-            <p style="font-size:.82rem;color:#aaa;margin-bottom:1rem">Thêm link YouTube — khi hết bài sẽ tự động chuyển theo chế độ đã chọn.</p>
-
-            <!-- Thêm bài mới -->
-            <div style="margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px dashed #f5dde4">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.6rem">
-                    <div>
-                        <div style="font-size:.78rem;color:#888;margin-bottom:.3rem">🎵 Tên bài hát</div>
-                        <el-input v-model="newSong.title" placeholder="VD: Hương Mùa Hè..." size="small" />
-                    </div>
-                    <div>
-                        <div style="font-size:.78rem;color:#888;margin-bottom:.3rem">🔗 Link YouTube</div>
-                        <el-input v-model="newSong.url" placeholder="https://youtube.com/watch?v=..." size="small" />
-                    </div>
-                </div>
-                <el-button class="save-btn" size="small" @click="addSong" style="width:100%">+ Thêm vào playlist</el-button>
-            </div>
-
-            <!-- Danh sách -->
-            <div v-if="playlist.length === 0" style="text-align:center;color:#ccc;padding:1.5rem;font-style:italic">
-                Chưa có bài nào — thêm link YouTube phía trên
-            </div>
-            <div v-for="(song, idx) in playlist" :key="song.id" class="playlist-row">
-                <div>
-                    <div class="song-title">{{ idx+1 }}. {{ song.title }}</div>
-                    <div class="song-url">{{ song.url }}</div>
-                </div>
-                <div class="song-order">
-                    <el-button class="btn-order" size="small" :disabled="idx===0" @click="moveSong(idx,-1)">↑</el-button>
-                    <el-button class="btn-order" size="small" :disabled="idx===playlist.length-1" @click="moveSong(idx,1)">↓</el-button>
-                </div>
-                <el-button class="btn-del-song" size="small" @click="removeSong(idx)">🗑</el-button>
-            </div>
-
-            <div style="margin-top:1rem;text-align:right" v-if="playlist.length>0">
-                <el-button class="save-btn" :loading="savingPlaylist" @click="savePlaylist">💾 Lưu playlist</el-button>
-            </div>
-        </div>
-
-        <!-- ===== Preview ===== -->
-        <div class="section-card">
-            <div class="section-title"><span class="section-title-left">👀 Xem trước</span></div>
-            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;align-items:flex-end">
-                <el-input v-model="previewName" placeholder="Nhập tên để xem trước..." style="width:280px" />
-                <el-button class="save-btn" @click="previewGreeting">🔍 Xem thử</el-button>
-            </div>
-            <div v-if="previewResult" style="margin-top:1rem;background:#fff8f9;border:1px solid #f5dde4;border-radius:10px;padding:1rem">
-                <div style="font-weight:600;color:var(--rose);margin-bottom:0.5rem">{{ previewResult.name }}</div>
-                <div style="font-size:0.9rem;color:#555;margin-bottom:0.5rem">{{ previewResult.message }}</div>
-                <el-tag :type="previewResult.hasPhoto ? 'success' : 'info'" size="small">
-                    {{ previewResult.hasPhoto ? '✓ Có ảnh' : '◌ Không có ảnh' }}
-                </el-tag>
-            </div>
-        </div>
-
     </div>
 
-    <!-- ===== DIALOG THÊM / SỬA ===== -->
-    <el-dialog v-model="dialogVisible" :title="isEditing ? '✏ Sửa người đặc biệt' : '+ Thêm người đặc biệt'" width="520px" border-radius="16px">
-        <div class="dialog-photo-wrap">
-            <img v-if="form.previewUrl" :src="form.previewUrl" class="dialog-avatar" @error="e=>e.target.style.display='none'" />
-            <div v-else class="dialog-avatar-ph">👩</div>
-            <el-upload :show-file-list="false" accept="image/*" :before-upload="handleDialogPhoto">
-                <el-button size="small" plain style="border-radius:50px">📷 {{ form.previewUrl ? 'Đổi ảnh' : 'Chọn ảnh' }}</el-button>
-            </el-upload>
+    <!-- ── SECTION 2: Lời chúc chung ── -->
+    <div class="card bg-white rounded-xl3 p-7 mb-5 shadow-card border border-petal">
+        <h2 class="font-display text-2xl text-rose font-semibold mb-1">💌 Lời Chúc Chung</h2>
+        <p class="text-xs text-gray-400 mb-4">Dành cho những người không có trong danh sách đặc biệt.</p>
+
+        <textarea class="field mb-3" id="general-msg" rows="4" placeholder="Nhập lời chúc chung…"></textarea>
+        <button class="btn btn-primary" id="save-general-btn" onclick="saveGeneralMessage()">💾 Lưu lời chúc chung</button>
+
+        <hr class="divider mt-5 mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Lời chúc riêng (không cần ảnh)</p>
+        <div class="grid gap-2 mb-3" style="grid-template-columns:1fr 2fr auto">
+            <input class="field" id="new-person-name" placeholder="Tên người…">
+            <textarea class="field" id="new-person-msg" rows="2" placeholder="Lời chúc riêng…"></textarea>
+            <button class="btn btn-primary self-start" onclick="addCustomMsg()">+ Thêm</button>
+        </div>
+        <div id="custom-tags" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <!-- ── SECTION 3: Playlist ── -->
+    <div class="card bg-white rounded-xl3 p-7 mb-5 shadow-card border border-petal">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
+            <h2 class="font-display text-2xl text-rose font-semibold">🎵 Playlist Nhạc</h2>
+            <div class="flex items-center gap-1.5">
+                <span class="text-xs text-gray-400 mr-1">Chế độ:</span>
+                <button class="btn btn-mode" id="mode-loop"    onclick="setPlayMode('loop')">🔁 Lặp</button>
+                <button class="btn btn-mode" id="mode-next"    onclick="setPlayMode('next')">⏭ Tiếp</button>
+                <button class="btn btn-mode" id="mode-shuffle" onclick="setPlayMode('shuffle')">🔀 Ngẫu nhiên</button>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mb-5">Thêm link YouTube — hết bài sẽ tự chuyển theo chế độ.</p>
+
+        <!-- Thêm bài -->
+        <div class="border border-dashed border-rose-mid rounded-xl p-4 mb-5">
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">🎵 Tên bài hát</label>
+                    <input class="field" id="new-song-title" placeholder="VD: Hương Mùa Hè…">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-gray-500 mb-1 block">🔗 Link YouTube</label>
+                    <input class="field" id="new-song-url" placeholder="https://youtube.com/watch?v=…">
+                </div>
+            </div>
+            <button class="btn btn-primary w-full" onclick="addSong()">+ Thêm vào playlist</button>
         </div>
 
-        <div style="margin-bottom:1rem">
-            <div class="form-label">Họ và tên *</div>
-            <el-input v-model="form.name" placeholder="Nguyễn Thị ..." :disabled="isEditing" />
-            <div v-if="isEditing" style="font-size:0.75rem;color:#aaa;margin-top:0.3rem">Không thể đổi tên, hãy xóa và thêm lại</div>
+        <!-- Danh sách bài -->
+        <div id="playlist-list">
+            <p class="text-center text-gray-300 italic text-sm py-6">Chưa có bài — thêm link YouTube phía trên</p>
         </div>
 
-        <div style="margin-bottom:1rem">
-            <div class="form-label">Lời chúc riêng</div>
-            <el-input v-model="form.message" type="textarea" :rows="4" placeholder="Nhập lời chúc dành riêng..." />
+        <div id="save-playlist-wrap" class="mt-4 text-right hidden">
+            <button class="btn btn-primary" id="save-playlist-btn" onclick="savePlaylist()">💾 Lưu playlist</button>
+        </div>
+    </div>
+
+    <!-- ── Preview ── -->
+    <div class="card bg-white rounded-xl3 p-7 shadow-card border border-petal">
+        <h2 class="font-display text-2xl text-rose font-semibold mb-4">👀 Xem Trước</h2>
+        <div class="flex items-center gap-3 flex-wrap">
+            <input class="field" id="preview-name" placeholder="Nhập tên để xem trước…" style="max-width:280px">
+            <button class="btn btn-primary" onclick="previewGreeting()">🔍 Xem thử</button>
+        </div>
+        <div id="preview-result" class="hidden mt-4 bg-rose-light border border-petal rounded-xl p-4">
+            <div id="pr-name" class="font-semibold text-rose mb-1"></div>
+            <div id="pr-msg" class="text-sm text-gray-600 mb-2"></div>
+            <span id="pr-photo" class="tag"></span>
+        </div>
+    </div>
+
+</div><!-- /app -->
+
+<!-- ── DIALOG ── -->
+<div id="dialog-backdrop" onclick="closeDialogOnBg(event)">
+    <div id="dialog-box" class="p-7">
+        <h3 class="font-display text-2xl text-rose font-bold mb-5" id="dialog-title">Thêm người đặc biệt</h3>
+
+        <!-- Avatar preview -->
+        <div class="flex flex-col items-center gap-2 mb-5">
+            <div class="relative">
+                <img id="d-avatar-img" src="" class="hidden w-24 h-24 rounded-full object-cover border-4 border-petal">
+                <div id="d-avatar-ph" class="w-24 h-24 rounded-full bg-rose-light border-2 border-dashed border-rose-mid flex items-center justify-center text-4xl">👩</div>
+            </div>
+            <label class="btn btn-ghost cursor-pointer text-xs" for="d-photo-input">
+                <span id="d-photo-label">📷 Chọn ảnh</span>
+                <input type="file" id="d-photo-input" class="hidden" accept="image/*" onchange="handlePhotoChange(event)">
+            </label>
         </div>
 
-        <template #footer>
-            <el-button @click="dialogVisible=false" style="border-radius:50px">Hủy</el-button>
-            <el-button class="save-btn" :loading="form.saving" @click="submitDialog">
-                {{ isEditing ? '💾 Cập nhật' : '➕ Thêm mới' }}
-            </el-button>
-        </template>
-    </el-dialog>
+        <div class="mb-4">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5">Họ và tên *</label>
+            <input class="field" id="d-name" placeholder="Nguyễn Thị …">
+            <p id="d-name-note" class="text-xs text-gray-400 mt-1 hidden">Không thể đổi tên — xóa và thêm lại nếu cần</p>
+        </div>
 
+        <div class="mb-6">
+            <label class="block text-xs font-semibold text-gray-500 mb-1.5">Lời chúc riêng</label>
+            <textarea class="field" id="d-message" rows="4" placeholder="Nhập lời chúc dành riêng…"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <button class="btn btn-ghost" onclick="closeDialog()">Hủy</button>
+            <button class="btn btn-primary" id="d-submit-btn" onclick="submitDialog()">➕ Thêm mới</button>
+        </div>
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/element-plus/dist/index.full.min.js"></script>
+<!-- Toast -->
+<div id="toast"></div>
 
 <script>
-const { createApp, ref, reactive } = Vue;
-createApp({
-    data() {
-        return {
-            specialPeople: [],
-            generalMessage: 'Chúc mừng ngày Quốc tế Phụ nữ 8/3! Kính chúc bạn luôn vui vẻ, hạnh phúc và tràn đầy sức khỏe. Chúc bạn luôn xinh đẹp, tỏa sáng trong mọi hoàn cảnh! 🌺🌸',
-            savingGeneral: false,
-            newPersonName: '',
-            newPersonMsg: '',
-            customList: [],
-            previewName: '',
-            previewResult: null,
-            // Dialog
-            dialogVisible: false,
+    // ─── State ───────────────────────────────────────────────
+    let specialPeople = [];
+    let customList    = [];
+    let playlist      = [];
+    let playMode      = 'next';
+
+    let isEditing     = false;
+    let dialogPendingFile = null;
+
+    // ─── Toast ────────────────────────────────────────────────
+    function toast(msg, type='success') {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = `show ${type}`;
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    // ─── Load data ────────────────────────────────────────────
+    async function loadData() {
+        try {
+            const res  = await fetch('/api/admin/special-recipients');
+            const data = await res.json();
+            if (!data.success) return;
+
+            const configs = data.savedConfigs || {};
+            const names   = data.specialRecipientsList || [];
+            specialPeople = names.map(name => ({
+                name,
+                message:    (configs[name] || {}).message   || '',
+                previewUrl: (configs[name] || {}).photoPath || null,
+            }));
+
+            if (data.generalMessage)
+                document.getElementById('general-msg').value = data.generalMessage;
+
+            const msgs = data.customMessages || {};
+            const skip = [...names, '__general__'];
+            customList = Object.entries(msgs)
+                .filter(([n]) => !skip.includes(n))
+                .map(([name, msg]) => ({ name, msg }));
+
+            renderPeopleTable();
+            renderCustomTags();
+
             // Playlist
-            playlist: [],
-            playMode: 'next',
-            newSong: { title:'', url:'' },
-            savingPlaylist: false,
-            isEditing: false,
-            form: { name:'', message:'', previewUrl:null, pendingFile:null, saving:false },
-        };
-    },
-    async mounted() {
-        await this.loadData();
-    },
-    methods: {
-        async loadData() {
             try {
-                const res = await fetch('/api/admin/special-recipients');
-                const data = await res.json();
-                if (data.success) {
-                    const configs = data.savedConfigs || {};
-                    // Build specialPeople từ danh sách trả về
-                    const names = data.specialRecipientsList || [];
-                    this.specialPeople = names.map(name => {
-                        const cfg = configs[name] || {};
-                        return { name, message: cfg.message||'', previewUrl: cfg.photoPath||null };
-                    });
-                    if (data.generalMessage) this.generalMessage = data.generalMessage;
-                // Load playlist
-                try {
-                    const pr = await fetch('/api/admin/playlist');
-                    const pd = await pr.json();
-                    if (pd.success) {
-                        this.playlist = pd.playlist || [];
-                        this.playMode = pd.playMode || 'next';
-                    }
-                } catch(e) { console.error('playlist load error', e); }
-                    const msgs = data.customMessages || {};
-                    const skip = [...names, '__general__'];
-                    this.customList = Object.entries(msgs)
-                        .filter(([n]) => !skip.includes(n))
-                        .map(([name, msg]) => ({ name, msg }));
+                const pr = await fetch('/api/admin/playlist');
+                const pd = await pr.json();
+                if (pd.success) {
+                    playlist = pd.playlist || [];
+                    playMode = pd.playMode || 'next';
+                    renderPlaylist();
+                    setPlayModeUI(playMode);
                 }
-            } catch(e) { console.error(e); }
-        },
+            } catch(e) { console.error('playlist', e); }
 
-        // ===== DIALOG =====
-        openAddDialog() {
-            this.isEditing = false;
-            this.form = { name:'', message:'', previewUrl:null, pendingFile:null, saving:false };
-            this.dialogVisible = true;
-        },
-        openEditDialog(person) {
-            this.isEditing = true;
-            this.form = { name: person.name, message: person.message, previewUrl: person.previewUrl, pendingFile:null, saving:false };
-            this.dialogVisible = true;
-        },
-        handleDialogPhoto(file) {
-            const reader = new FileReader();
-            reader.onload = e => { this.form.previewUrl = e.target.result; };
-            reader.readAsDataURL(file);
-            this.form.pendingFile = file;
-            return false;
-        },
-        async submitDialog() {
-            if (!this.form.name.trim()) {
-                ElementPlus.ElMessage.warning('Vui lòng nhập tên!');
-                return;
-            }
-            this.form.saving = true;
-            try {
-                // Upload ảnh nếu có file mới
-                if (this.form.pendingFile) {
-                    // Thêm người vào special list trước (nếu thêm mới)
-                    if (!this.isEditing) {
-                        await fetch('/api/admin/special-add', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: this.form.name.trim() })
-                        });
-                    }
-                    const fd = new FormData();
-                    fd.append('name', this.form.name.trim());
-                    fd.append('file', this.form.pendingFile);
-                    await fetch('/api/admin/photo', { method:'POST', body:fd });
-                } else if (!this.isEditing) {
-                    await fetch('/api/admin/special-add', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: this.form.name.trim() })
-                    });
-                }
-                // Lưu lời chúc
-                if (this.form.message.trim()) {
-                    await fetch('/api/admin/message', {
-                        method:'POST',
-                        headers:{'Content-Type':'application/json'},
-                        body: JSON.stringify({ name: this.form.name.trim(), message: this.form.message })
-                    });
-                }
-                ElementPlus.ElMessage.success(this.isEditing ? 'Cập nhật thành công!' : 'Thêm người thành công!');
-                this.dialogVisible = false;
-                await this.loadData();
-            } catch(e) {
-                ElementPlus.ElMessage.error('Có lỗi xảy ra');
-            } finally {
-                this.form.saving = false;
-            }
-        },
+        } catch(e) { console.error(e); }
+    }
 
-        // ===== XÓA =====
-        confirmDelete(person) {
-            ElementPlus.ElMessageBox.confirm(
-                `Bạn có chắc muốn xóa <b>${person.name}</b> khỏi danh sách đặc biệt không?`,
-                'Xác nhận xóa',
-                { confirmButtonText: 'Xóa', cancelButtonText: 'Hủy', type: 'warning', dangerouslyUseHTMLString: true }
-            ).then(async () => {
-                await fetch('/api/admin/special-remove', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: person.name })
-                });
-                ElementPlus.ElMessage.success('Đã xóa ' + person.name);
-                await this.loadData();
-            }).catch(() => {});
-        },
+    // ─── People Table ─────────────────────────────────────────
+    function renderPeopleTable() {
+        const tbody = document.getElementById('people-tbody');
+        if (!specialPeople.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-300 italic py-8 text-sm">Chưa có ai trong danh sách đặc biệt</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = specialPeople.map(p => `
+        <tr class="trow border-b border-petal last:border-0">
+            <td class="px-4 py-3">
+                <div class="flex items-center gap-2.5">
+                    ${p.previewUrl
+            ? `<img src="${p.previewUrl}" class="avatar" onerror="this.style.display='none'">`
+            : `<div class="avatar-ph">👩</div>`}
+                    <span class="font-medium text-gray-800 text-sm">${p.name}</span>
+                </div>
+            </td>
+            <td class="px-4 py-3">
+                ${p.message
+            ? `<span class="text-gray-400 text-xs line-clamp-2 max-w-xs" title="${p.message.replace(/"/g,'&quot;')}">${p.message}</span>`
+            : `<span class="text-gray-300 italic text-xs">Chưa có lời chúc riêng</span>`}
+            </td>
+            <td class="px-4 py-3">
+                ${p.previewUrl
+            ? `<span class="tag tag-success">✓ Có ảnh</span>`
+            : `<span class="tag tag-info">Chưa có</span>`}
+            </td>
+            <td class="px-4 py-3">
+                <div class="flex gap-1.5">
+                    <button class="btn btn-warn text-xs" onclick='openEditDialog(${JSON.stringify(p)})'>✏ Sửa</button>
+                    <button class="btn btn-danger text-xs" onclick='confirmDelete("${p.name}")'>🗑</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    }
 
-        // ===== LỜI CHÚC CHUNG =====
-        async saveGeneralMessage() {
-            this.savingGeneral = true;
-            try {
-                await fetch('/api/admin/message', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ name:'__general__', message: this.generalMessage })
-                });
-                ElementPlus.ElMessage.success('Đã lưu lời chúc chung!');
-            } finally { this.savingGeneral = false; }
-        },
-        async addCustomMsg() {
-            if (!this.newPersonName.trim() || !this.newPersonMsg.trim()) {
-                ElementPlus.ElMessage.warning('Vui lòng điền đủ tên và lời chúc');
-                return;
-            }
-            const res = await fetch('/api/admin/message', {
+    // ─── Custom Tags ──────────────────────────────────────────
+    function renderCustomTags() {
+        const wrap = document.getElementById('custom-tags');
+        wrap.innerHTML = customList.map(item => `
+        <span class="tag tag-warn flex items-center gap-1">
+            ${item.name}: ${item.msg.slice(0,30)}…
+            <button onclick='removeCustomMsg("${item.name}")' class="ml-1 text-xs opacity-60 hover:opacity-100">✕</button>
+        </span>
+    `).join('');
+    }
+
+    // ─── General message ──────────────────────────────────────
+    async function saveGeneralMessage() {
+        const msg = document.getElementById('general-msg').value;
+        const btn = document.getElementById('save-general-btn');
+        btn.disabled = true; btn.textContent = '저장 중…';
+        try {
+            await fetch('/api/admin/message', {
                 method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ name: this.newPersonName, message: this.newPersonMsg })
+                body: JSON.stringify({ name:'__general__', message: msg })
             });
-            const data = await res.json();
-            if (data.success) {
-                this.customList.push({ name: this.newPersonName, msg: this.newPersonMsg });
-                this.newPersonName = ''; this.newPersonMsg = '';
-                ElementPlus.ElMessage.success('Đã thêm!');
-            }
-        },
-        // ===== PLAYLIST =====
-        addSong() {
-            if (!this.newSong.title.trim() || !this.newSong.url.trim()) {
-                ElementPlus.ElMessage.warning('Vui lòng nhập tên bài và link YouTube');
-                return;
-            }
-            if (!this.newSong.url.includes('youtube') && !this.newSong.url.includes('youtu.be')) {
-                ElementPlus.ElMessage.warning('Chỉ hỗ trợ link YouTube!');
-                return;
-            }
-            this.playlist.push({ id: Date.now(), title: this.newSong.title.trim(), url: this.newSong.url.trim() });
-            this.newSong = { title:'', url:'' };
-        },
-        removeSong(idx) {
-            this.playlist.splice(idx, 1);
-        },
-        moveSong(idx, dir) {
-            const newIdx = idx + dir;
-            if (newIdx < 0 || newIdx >= this.playlist.length) return;
-            const tmp = this.playlist[idx];
-            this.playlist[idx] = this.playlist[newIdx];
-            this.playlist[newIdx] = tmp;
-        },
-        setPlayMode(mode) {
-            this.playMode = mode;
-        },
-        async savePlaylist() {
-            this.savingPlaylist = true;
-            try {
-                const res = await fetch('/api/admin/playlist', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ playlist: this.playlist, playMode: this.playMode })
-                });
-                const data = await res.json();
-                if (data.success) ElementPlus.ElMessage.success('Đã lưu playlist!');
-                else ElementPlus.ElMessage.error('Lưu thất bại');
-            } catch(e) { ElementPlus.ElMessage.error('Lỗi kết nối'); }
-            finally { this.savingPlaylist = false; }
-        },
-        removeCustomMsg(name) {
-            this.customList = this.customList.filter(i => i.name !== name);
-        },
-        async previewGreeting() {
-            if (!this.previewName.trim()) { ElementPlus.ElMessage.warning('Nhập tên để xem trước'); return; }
-            const res = await fetch(`/api/greeting?name=${encodeURIComponent(this.previewName.trim())}`);
-            const data = await res.json();
-            if (data.success) this.previewResult = data;
+            toast('Đã lưu lời chúc chung!');
+        } finally { btn.disabled = false; btn.textContent = '💾 Lưu lời chúc chung'; }
+    }
+
+    // ─── Custom message ───────────────────────────────────────
+    async function addCustomMsg() {
+        const name = document.getElementById('new-person-name').value.trim();
+        const msg  = document.getElementById('new-person-msg').value.trim();
+        if (!name || !msg) { toast('Vui lòng điền đủ tên và lời chúc', 'warning'); return; }
+        const res  = await fetch('/api/admin/message', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ name, message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+            customList.push({ name, msg });
+            document.getElementById('new-person-name').value = '';
+            document.getElementById('new-person-msg').value  = '';
+            renderCustomTags();
+            toast('Đã thêm!');
         }
     }
-}).use(ElementPlus).mount('#admin-app');
+    function removeCustomMsg(name) {
+        customList = customList.filter(i => i.name !== name);
+        renderCustomTags();
+    }
+
+    // ─── Delete person ────────────────────────────────────────
+    async function confirmDelete(name) {
+        if (!confirm(`Bạn có chắc muốn xóa "${name}" khỏi danh sách đặc biệt không?`)) return;
+        await fetch('/api/admin/special-remove', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ name })
+        });
+        toast('Đã xóa ' + name);
+        await loadData();
+    }
+
+    // ─── Playlist ─────────────────────────────────────────────
+    function setPlayMode(mode) {
+        playMode = mode;
+        setPlayModeUI(mode);
+    }
+    function setPlayModeUI(mode) {
+        ['loop','next','shuffle'].forEach(m => {
+            const btn = document.getElementById('mode-'+m);
+            btn.classList.toggle('active', m === mode);
+        });
+    }
+    function renderPlaylist() {
+        const wrap = document.getElementById('playlist-list');
+        const saveWrap = document.getElementById('save-playlist-wrap');
+        if (!playlist.length) {
+            wrap.innerHTML = `<p class="text-center text-gray-300 italic text-sm py-6">Chưa có bài — thêm link YouTube phía trên</p>`;
+            saveWrap.classList.add('hidden');
+            return;
+        }
+        saveWrap.classList.remove('hidden');
+        wrap.innerHTML = playlist.map((song, idx) => `
+        <div class="grid items-center gap-3 py-3 border-b border-petal last:border-0"
+             style="grid-template-columns:1fr auto auto">
+            <div>
+                <div class="text-sm font-medium text-gray-800">${idx+1}. ${song.title}</div>
+                <div class="text-xs text-gray-400 mt-0.5 truncate">${song.url}</div>
+            </div>
+            <div class="flex gap-1">
+                <button class="btn btn-neutral text-xs" onclick="moveSong(${idx},-1)" ${idx===0?'disabled':''}>↑</button>
+                <button class="btn btn-neutral text-xs" onclick="moveSong(${idx},1)"  ${idx===playlist.length-1?'disabled':''}>↓</button>
+            </div>
+            <button class="btn btn-danger text-xs" onclick="removeSong(${idx})">🗑</button>
+        </div>
+    `).join('');
+    }
+    function addSong() {
+        const title = document.getElementById('new-song-title').value.trim();
+        const url   = document.getElementById('new-song-url').value.trim();
+        if (!title || !url) { toast('Vui lòng nhập tên bài và link YouTube', 'warning'); return; }
+        if (!url.includes('youtube') && !url.includes('youtu.be')) {
+            toast('Chỉ hỗ trợ link YouTube!', 'warning'); return;
+        }
+        playlist.push({ id: Date.now(), title, url });
+        document.getElementById('new-song-title').value = '';
+        document.getElementById('new-song-url').value   = '';
+        renderPlaylist();
+    }
+    function removeSong(idx) {
+        playlist.splice(idx, 1);
+        renderPlaylist();
+    }
+    function moveSong(idx, dir) {
+        const ni = idx + dir;
+        if (ni < 0 || ni >= playlist.length) return;
+        [playlist[idx], playlist[ni]] = [playlist[ni], playlist[idx]];
+        renderPlaylist();
+    }
+    async function savePlaylist() {
+        const btn = document.getElementById('save-playlist-btn');
+        btn.disabled = true; btn.textContent = 'Đang lưu…';
+        try {
+            const res  = await fetch('/api/admin/playlist', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ playlist, playMode })
+            });
+            const data = await res.json();
+            data.success ? toast('Đã lưu playlist!') : toast('Lưu thất bại', 'error');
+        } catch { toast('Lỗi kết nối', 'error'); }
+        finally { btn.disabled = false; btn.textContent = '💾 Lưu playlist'; }
+    }
+
+    // ─── Preview ──────────────────────────────────────────────
+    async function previewGreeting() {
+        const name = document.getElementById('preview-name').value.trim();
+        if (!name) { toast('Nhập tên để xem trước', 'warning'); return; }
+        const res  = await fetch(`/api/greeting?name=${encodeURIComponent(name)}`);
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('pr-name').textContent = data.name;
+            document.getElementById('pr-msg').textContent  = data.message;
+            const photoEl = document.getElementById('pr-photo');
+            if (data.hasPhoto) {
+                photoEl.className = 'tag tag-success'; photoEl.textContent = '✓ Có ảnh';
+            } else {
+                photoEl.className = 'tag tag-info'; photoEl.textContent = '◌ Không có ảnh';
+            }
+            document.getElementById('preview-result').classList.remove('hidden');
+        }
+    }
+
+    // ─── Dialog ───────────────────────────────────────────────
+    function openAddDialog() {
+        isEditing = false; dialogPendingFile = null;
+        document.getElementById('dialog-title').textContent = '+ Thêm người đặc biệt';
+        document.getElementById('d-submit-btn').textContent = '➕ Thêm mới';
+        document.getElementById('d-name').value = '';
+        document.getElementById('d-name').disabled = false;
+        document.getElementById('d-name-note').classList.add('hidden');
+        document.getElementById('d-message').value = '';
+        document.getElementById('d-avatar-img').classList.add('hidden');
+        document.getElementById('d-avatar-ph').classList.remove('hidden');
+        document.getElementById('d-photo-label').textContent = '📷 Chọn ảnh';
+        document.getElementById('d-photo-input').value = '';
+        document.getElementById('dialog-backdrop').classList.add('open');
+    }
+    function openEditDialog(person) {
+        isEditing = true; dialogPendingFile = null;
+        document.getElementById('dialog-title').textContent = '✏ Sửa người đặc biệt';
+        document.getElementById('d-submit-btn').textContent = '💾 Cập nhật';
+        document.getElementById('d-name').value    = person.name;
+        document.getElementById('d-name').disabled = true;
+        document.getElementById('d-name-note').classList.remove('hidden');
+        document.getElementById('d-message').value = person.message || '';
+        if (person.previewUrl) {
+            const img = document.getElementById('d-avatar-img');
+            img.src = person.previewUrl; img.classList.remove('hidden');
+            document.getElementById('d-avatar-ph').classList.add('hidden');
+            document.getElementById('d-photo-label').textContent = '📷 Đổi ảnh';
+        } else {
+            document.getElementById('d-avatar-img').classList.add('hidden');
+            document.getElementById('d-avatar-ph').classList.remove('hidden');
+            document.getElementById('d-photo-label').textContent = '📷 Chọn ảnh';
+        }
+        document.getElementById('d-photo-input').value = '';
+        document.getElementById('dialog-backdrop').classList.add('open');
+    }
+    function closeDialog() {
+        document.getElementById('dialog-backdrop').classList.remove('open');
+    }
+    function closeDialogOnBg(e) {
+        if (e.target === document.getElementById('dialog-backdrop')) closeDialog();
+    }
+    function handlePhotoChange(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        dialogPendingFile = file;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            const img = document.getElementById('d-avatar-img');
+            img.src = ev.target.result; img.classList.remove('hidden');
+            document.getElementById('d-avatar-ph').classList.add('hidden');
+            document.getElementById('d-photo-label').textContent = '📷 Đổi ảnh';
+        };
+        reader.readAsDataURL(file);
+    }
+    async function submitDialog() {
+        const name = document.getElementById('d-name').value.trim();
+        const msg  = document.getElementById('d-message').value;
+        if (!name) { toast('Vui lòng nhập tên!', 'warning'); return; }
+
+        const btn = document.getElementById('d-submit-btn');
+        btn.disabled = true; btn.textContent = 'Đang lưu…';
+        try {
+            if (dialogPendingFile) {
+                if (!isEditing) {
+                    await fetch('/api/admin/special-add', {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({ name })
+                    });
+                }
+                const fd = new FormData();
+                fd.append('name', name); fd.append('file', dialogPendingFile);
+                await fetch('/api/admin/photo', { method:'POST', body: fd });
+            } else if (!isEditing) {
+                await fetch('/api/admin/special-add', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ name })
+                });
+            }
+            if (msg.trim()) {
+                await fetch('/api/admin/message', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ name, message: msg })
+                });
+            }
+            toast(isEditing ? 'Cập nhật thành công!' : 'Thêm người thành công!');
+            closeDialog();
+            await loadData();
+        } catch { toast('Có lỗi xảy ra', 'error'); }
+        finally {
+            btn.disabled = false;
+            btn.textContent = isEditing ? '💾 Cập nhật' : '➕ Thêm mới';
+        }
+    }
+
+    // ─── Init ─────────────────────────────────────────────────
+    loadData();
 </script>
 </body>
 </html>
