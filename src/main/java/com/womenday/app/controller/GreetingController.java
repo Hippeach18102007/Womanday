@@ -67,13 +67,12 @@ public class GreetingController {
             @RequestParam("file") MultipartFile file) throws IOException {
         Map<String, Object> response = new HashMap<>();
         if (!greetingService.isSpecialRecipient(name)) {
-            // Tự động thêm vào special nếu chưa có
             greetingService.addSpecialRecipient(name);
         }
         String uploadDir = "uploads/images/";
         Files.createDirectories(Paths.get(uploadDir));
         String filename = name.replaceAll("[^a-zA-Z0-9]", "_").toLowerCase()
-            + "_" + System.currentTimeMillis() + getExtension(file.getOriginalFilename());
+                + "_" + System.currentTimeMillis() + getExtension(file.getOriginalFilename());
         Path filePath = Paths.get(uploadDir + filename);
         Files.write(filePath, file.getBytes());
         String webPath = "/images/" + filename;
@@ -84,7 +83,33 @@ public class GreetingController {
         return ResponseEntity.ok(response);
     }
 
-    /** Thêm người vào danh sách đặc biệt */
+    /** Xóa ảnh của một người (chỉ xóa path trong DB, không xóa file vật lý) */
+    @PostMapping("/api/admin/photo-remove")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> removePhoto(@RequestBody Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+        String name = body.get("name");
+        if (name == null || name.trim().isEmpty()) {
+            response.put("success", false);
+            response.put("error", "Tên không được để trống");
+            return ResponseEntity.badRequest().body(response);
+        }
+        // Lấy path cũ để xóa file vật lý (tùy chọn)
+        greetingService.getConfig(name).ifPresent(cfg -> {
+            if (cfg.getPhotoPath() != null && !cfg.getPhotoPath().isBlank()) {
+                try {
+                    // Xóa file vật lý: /images/abc.jpg → uploads/images/abc.jpg
+                    String filePath = "uploads" + cfg.getPhotoPath();
+                    Files.deleteIfExists(Paths.get(filePath));
+                } catch (IOException ignored) {}
+            }
+        });
+        greetingService.setSpecialPhoto(name, null);
+        response.put("success", true);
+        response.put("message", "Đã xóa ảnh của " + name);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/api/admin/special-add")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> addSpecial(@RequestBody Map<String, String> body) {
@@ -101,7 +126,6 @@ public class GreetingController {
         return ResponseEntity.ok(response);
     }
 
-    /** Xóa người khỏi danh sách đặc biệt */
     @PostMapping("/api/admin/special-remove")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> removeSpecial(@RequestBody Map<String, String> body) {
@@ -139,7 +163,7 @@ public class GreetingController {
         response.put("customMessages", greetingService.getAllCustomMessages());
 
         greetingService.getConfig("__general__").ifPresent(cfg ->
-            response.put("generalMessage", cfg.getMessage() != null ? cfg.getMessage() : "")
+                response.put("generalMessage", cfg.getMessage() != null ? cfg.getMessage() : "")
         );
 
         return ResponseEntity.ok(response);
