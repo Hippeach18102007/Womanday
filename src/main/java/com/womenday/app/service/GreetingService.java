@@ -112,7 +112,7 @@ public class GreetingService {
         String canonical = findCanonicalName(name);
         String resolvedName = canonical != null ? canonical : name.trim();
 
-        boolean isSpecial = canonical != null && getSpecialRecipientsList().contains(canonical);
+        boolean isSpecial = canonical != null;
         Optional<GreetingConfig> config = repo.findById(resolvedName);
 
         String message;
