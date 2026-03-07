@@ -13,7 +13,8 @@ public class GreetingConfig {
     @Column(name = "message", length = 2000)
     private String message;
 
-    @Column(name = "photo_path", length = 500)
+    @Lob
+    @Column(name = "photo_path", columnDefinition = "TEXT")
     private String photoPath;
 
     public GreetingConfig() {}

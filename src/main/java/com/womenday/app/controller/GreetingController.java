@@ -1,7 +1,6 @@
 package com.womenday.app.controller;
 
 import com.womenday.app.model.Greeting;
-import com.womenday.app.model.GreetingConfig;
 import com.womenday.app.service.GreetingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.*;
 
 @Controller
@@ -39,7 +37,7 @@ public class GreetingController {
         response.put("name", greeting.getRecipientName());
         response.put("message", greeting.getMessage());
         response.put("hasPhoto", greeting.isHasPhoto());
-        response.put("photoPath", greeting.getPhotoPath());
+        response.put("photoPath", greeting.getPhotoPath()); // data:image/...;base64,...
         return ResponseEntity.ok(response);
     }
 
@@ -56,34 +54,59 @@ public class GreetingController {
         }
         greetingService.setCustomMessage(name, message);
         response.put("success", true);
-        response.put("message", "Đã lưu lời chúc cho " + name);
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Upload ảnh → convert sang Base64 Data URL → lưu thẳng vào DB.
+     * Không dùng file system → hoạt động tốt trên Koyeb / mọi cloud platform.
+     */
     @PostMapping("/api/admin/photo")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> uploadPhoto(
             @RequestParam("name") String name,
             @RequestParam("file") MultipartFile file) throws IOException {
+
         Map<String, Object> response = new HashMap<>();
+
+        if (file.isEmpty()) {
+            response.put("success", false);
+            response.put("error", "File rỗng");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Giới hạn 3MB
+        if (file.getSize() > 3 * 1024 * 1024) {
+            response.put("success", false);
+            response.put("error", "Ảnh quá lớn, vui lòng dùng ảnh dưới 3MB");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Xác định MIME type
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            contentType = "image/jpeg";
+        }
+
+        // Convert sang Base64 Data URL
+        byte[] bytes = file.getBytes();
+        String base64 = Base64.getEncoder().encodeToString(bytes);
+        String dataUrl = "data:" + contentType + ";base64," + base64;
+
+        // Đảm bảo người có trong danh sách đặc biệt
         if (!greetingService.isSpecialRecipient(name)) {
             greetingService.addSpecialRecipient(name);
         }
-        String uploadDir = "uploads/images/";
-        Files.createDirectories(Paths.get(uploadDir));
-        String filename = name.replaceAll("[^a-zA-Z0-9]", "_").toLowerCase()
-                + "_" + System.currentTimeMillis() + getExtension(file.getOriginalFilename());
-        Path filePath = Paths.get(uploadDir + filename);
-        Files.write(filePath, file.getBytes());
-        String webPath = "/images/" + filename;
-        greetingService.setSpecialPhoto(name, webPath);
+
+        greetingService.setSpecialPhoto(name, dataUrl);
+
         response.put("success", true);
-        response.put("photoPath", webPath);
+        response.put("photoPath", dataUrl);
         response.put("message", "Upload ảnh thành công cho " + name);
         return ResponseEntity.ok(response);
     }
 
-    /** Xóa ảnh của một người (chỉ xóa path trong DB, không xóa file vật lý) */
+    /** Xóa ảnh — set photoPath = null trong DB */
     @PostMapping("/api/admin/photo-remove")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> removePhoto(@RequestBody Map<String, String> body) {
@@ -94,16 +117,6 @@ public class GreetingController {
             response.put("error", "Tên không được để trống");
             return ResponseEntity.badRequest().body(response);
         }
-        // Lấy path cũ để xóa file vật lý (tùy chọn)
-        greetingService.getConfig(name).ifPresent(cfg -> {
-            if (cfg.getPhotoPath() != null && !cfg.getPhotoPath().isBlank()) {
-                try {
-                    // Xóa file vật lý: /images/abc.jpg → uploads/images/abc.jpg
-                    String filePath = "uploads" + cfg.getPhotoPath();
-                    Files.deleteIfExists(Paths.get(filePath));
-                } catch (IOException ignored) {}
-            }
-        });
         greetingService.setSpecialPhoto(name, null);
         response.put("success", true);
         response.put("message", "Đã xóa ảnh của " + name);
@@ -167,11 +180,5 @@ public class GreetingController {
         );
 
         return ResponseEntity.ok(response);
-    }
-
-    private String getExtension(String filename) {
-        if (filename == null) return ".jpg";
-        int dot = filename.lastIndexOf('.');
-        return dot >= 0 ? filename.substring(dot) : ".jpg";
     }
 }
