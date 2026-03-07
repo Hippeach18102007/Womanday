@@ -110,6 +110,7 @@ public class GreetingService {
     public Greeting getGreeting(String name) {
         // Tìm tên chuẩn (đúng dấu/hoa thường) từ input bất kỳ
         String canonical = findCanonicalName(name);
+
         String resolvedName = canonical != null ? canonical : name.trim();
 
         boolean isSpecial = canonical != null;
@@ -132,6 +133,10 @@ public class GreetingService {
         String photoPath = null;
         if (isSpecial && config.isPresent()) {
             photoPath = config.get().getPhotoPath();
+            System.out.println("DEBUG photoPath length: " +
+                    (photoPath != null ? photoPath.length() : "null"));
+            System.out.println("DEBUG photoPath prefix: " +
+                    (photoPath != null ? photoPath.substring(0, Math.min(50, photoPath.length())) : "null"));
         }
 
         return new Greeting(resolvedName, message, isSpecial, photoPath);
