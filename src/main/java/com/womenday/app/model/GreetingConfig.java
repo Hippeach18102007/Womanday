@@ -13,7 +13,8 @@ public class GreetingConfig {
     @Column(name = "message", length = 2000)
     private String message;
 
-    @Lob
+    // KHÔNG dùng @Lob với PostgreSQL — Hibernate map @Lob String → OID, gây lỗi.
+    // columnDefinition = "TEXT" đủ để lưu Base64 dài hàng trăm nghìn ký tự.
     @Column(name = "photo_path", columnDefinition = "TEXT")
     private String photoPath;
 
